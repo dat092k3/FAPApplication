@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#FFFCF8"
+    tools:context=".LoginPage">
+
+    <ImageView
+        android:id="@+id/appLogo"
+        android:layout_width="90dp"
+        android:layout_height="90dp"
+        android:layout_marginTop="100dp"
+        android:src="@drawable/logofap"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:contentDescription="App Logo" />
+    <TextView
+        android:id="@+id/campusHeader"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="30dp"
+        android:text="Select your campus"
+        android:textColor="#8D8D8D"
+        android:textSize="18sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/appLogo" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/campusRecyclerView"
+        android:layout_width="wrap_content"
+        android:layout_height="150dp"
+        android:layout_marginTop="15dp"
+        android:clipToPadding="false"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/campusHeader"
+        tools:itemCount="4"
+        tools:listitem="@layout/item_campus" />
+
+
+    <com.google.android.gms.common.SignInButton
+        android:id="@+id/sign_btn"
+        android:layout_width="280dp"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="10dp"
+        android:backgroundTint="#4285F4"
+        android:paddingStart="15dp"
+        android:text="Đăng nhập bằng Google"
+        android:textAllCaps="false"
+        android:textColor="#FFFFFF"
+        android:textSize="16sp"
+        app:cornerRadius="8dp"
+        app:layout_constraintBottom_toTopOf="@id/feId_btn"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.503"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <Button
+        android:id="@+id/feId_btn"
+        android:layout_width="280dp"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="150dp"
+        android:backgroundTint="#4CAF50"
+        android:paddingStart="15dp"
+        android:text="Sign in with FEID"
+        android:textAllCaps="false"
+        android:textColor="#FFFFFF"
+        android:textSize="16sp"
+        app:cornerRadius="8dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+</androidx.constraintlayout.widget.ConstraintLayout>
