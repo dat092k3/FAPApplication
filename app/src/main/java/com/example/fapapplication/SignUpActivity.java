@@ -3,13 +3,15 @@ package com.example.fapapplication;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.Spinner;
 import android.widget.Toast;
 import android.app.DatePickerDialog;
-import android.widget.DatePicker;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.text.SimpleDateFormat;
 import java.util.Locale;
@@ -20,12 +22,16 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.google.android.material.textfield.TextInputLayout;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
 public class SignUpActivity extends AppCompatActivity {
     private FirebaseAuth auth;
     private DatabaseReference database;
+    private DatabaseReference campusRef;
+    private Spinner spinnerCampus;
+    private ArrayList<String> campusList = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,6 +40,7 @@ public class SignUpActivity extends AppCompatActivity {
 
         auth = FirebaseAuth.getInstance();
         database = FirebaseDatabase.getInstance().getReference("Users");
+        campusRef = FirebaseDatabase.getInstance().getReference("Campus");
 
         EditText studentId = findViewById(R.id.etStudentId);
         EditText fullName = findViewById(R.id.etFullName);
@@ -46,22 +53,29 @@ public class SignUpActivity extends AppCompatActivity {
         ImageView backButton = findViewById(R.id.backButton);
         TextInputLayout tilBirthdate = findViewById(R.id.tilBirthdate);
 
-        // Cho phép chọn ngày sinh
+        spinnerCampus = findViewById(R.id.spinnerCampus);
+        loadCampusData(); // ✅ Load campus từ Firebase vào Spinner
+
+        // 👉 Chọn ngày sinh
         tilBirthdate.setEndIconOnClickListener(v -> showDatePicker(etBirthdate));
         etBirthdate.setOnClickListener(v -> showDatePicker(etBirthdate));
 
-        // 🔹 Nút đăng ký
+        // 👉 Xử lý đăng ký
         signup.setOnClickListener(view -> {
             String fullname = fullName.getText().toString().trim();
+            String selectedCampus = spinnerCampus.getSelectedItem() != null ? spinnerCampus.getSelectedItem().toString() : "";
             String em = email.getText().toString().trim();
             String pass = password.getText().toString().trim();
             String confirmPass = confirm_password.getText().toString().trim();
             String addr = address.getText().toString().trim();
             String birthdate = etBirthdate.getText().toString().trim();
+            String studentIDValue = studentId.getText().toString().trim();
 
-            // Kiểm tra các trường
-            if (fullname.isEmpty() || em.isEmpty() || pass.isEmpty() || confirmPass.isEmpty() || addr.isEmpty() || birthdate.isEmpty()) {
-                Toast.makeText(SignUpActivity.this, "Please fill in all fields", Toast.LENGTH_SHORT).show();
+            // Kiểm tra input
+            if (fullname.isEmpty() || em.isEmpty() || pass.isEmpty() ||
+                    confirmPass.isEmpty() || addr.isEmpty() || birthdate.isEmpty() ||
+                    selectedCampus.isEmpty() || studentIDValue.isEmpty()) {
+                Toast.makeText(this, "Please fill in all fields", Toast.LENGTH_SHORT).show();
                 return;
             }
 
@@ -75,52 +89,64 @@ public class SignUpActivity extends AppCompatActivity {
                 return;
             }
 
-            ProgressDialog progressDialog = new ProgressDialog(SignUpActivity.this);
+            ProgressDialog progressDialog = new ProgressDialog(this);
             progressDialog.setMessage("Creating account...");
             progressDialog.setCancelable(false);
             progressDialog.show();
 
-            // 🔹 Tạo tài khoản Firebase
-            auth.createUserWithEmailAndPassword(em, pass)
-                    .addOnCompleteListener(task -> {
-                        progressDialog.dismiss();
-                        if (task.isSuccessful()) {
-                            FirebaseUser user = auth.getCurrentUser();
-                            if (user != null) {
-                                // 🔹 Lưu thông tin người dùng vào Realtime Database
-                                HashMap<String, Object> map = new HashMap<>();
-                                map.put("UID", user.getUid());
-                                map.put("StudentId", studentId.getText().toString());
-                                map.put("FullName", fullName.getText().toString());
-                                map.put("Email", em);
-                                map.put("Password", pass);
-                                map.put("Address", addr);
-                                map.put("Birthdate", birthdate);
-                                map.put("CreatedAt", System.currentTimeMillis());
+            // đăng ký Firebase Auth
+            auth.createUserWithEmailAndPassword(em, pass).addOnCompleteListener(task -> {
+                progressDialog.dismiss();
+                if (task.isSuccessful()) {
+                    FirebaseUser user = auth.getCurrentUser();
+                    if (user != null) {
+                        HashMap<String, Object> map = new HashMap<>();
+                        map.put("UID", user.getUid());
+                        map.put("StudentId", studentIDValue);
+                        map.put("Campus", selectedCampus);
+                        map.put("FullName", fullname);
+                        map.put("Email", em);
+                        map.put("Password", pass);
+                        map.put("Address", addr);
+                        map.put("Birthdate", birthdate);
+                        map.put("CreatedAt", System.currentTimeMillis());
 
-                                database.child(user.getUid()).setValue(map)
-                                        .addOnCompleteListener(saveTask -> {
-                                            if (saveTask.isSuccessful()) {
-                                                Toast.makeText(SignUpActivity.this, "Sign up successful!", Toast.LENGTH_SHORT).show();
-                                                Intent i = new Intent(SignUpActivity.this, LoginFeidPage.class);
-                                                startActivity(i);
-                                                finish();
-                                            } else {
-                                                Toast.makeText(SignUpActivity.this, "Failed to save user data", Toast.LENGTH_SHORT).show();
-                                            }
-                                        });
+                        database.child(user.getUid()).setValue(map).addOnCompleteListener(saveTask -> {
+                            if (saveTask.isSuccessful()) {
+                                Toast.makeText(this, "Sign up successful!", Toast.LENGTH_SHORT).show();
+                                startActivity(new Intent(this, LoginFeidPage.class));
+                                finish();
+                            } else {
+                                Toast.makeText(this, "Failed to save user data", Toast.LENGTH_SHORT).show();
                             }
-                        } else {
-                            Toast.makeText(SignUpActivity.this, "Sign Up Failed: " + task.getException().getMessage(), Toast.LENGTH_LONG).show();
-                        }
-                    });
+                        });
+                    }
+                } else {
+                    Toast.makeText(this, "Sign Up Failed: " +
+                            task.getException().getMessage(), Toast.LENGTH_LONG).show();
+                }
+            });
         });
 
-        // 🔹 Nút quay lại
+        // 👉 Nút back
         backButton.setOnClickListener(view -> {
-            Intent i = new Intent(SignUpActivity.this, LoginFeidPage.class);
-            startActivity(i);
+            startActivity(new Intent(this, LoginFeidPage.class));
             finish();
+        });
+    }
+
+    private void loadCampusData() {
+        campusRef.get().addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                campusList.clear();
+                for (DataSnapshot snapshot : task.getResult().getChildren()) {
+                    campusList.add(snapshot.getValue(String.class));
+                }
+                ArrayAdapter<String> adapter = new ArrayAdapter<>(this,
+                        android.R.layout.simple_spinner_item, campusList);
+                adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                spinnerCampus.setAdapter(adapter);
+            }
         });
     }
 

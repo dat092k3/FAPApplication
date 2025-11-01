@@ -78,9 +78,6 @@ public class LoginPage extends AppCompatActivity {
         setupCampusRecyclerView();
     }
 
-    /**
-     * Cấu hình các dịch vụ liên quan đến Google Sign-In.
-     */
     private void setupGoogleSignIn() {
         GoogleSignInOptions options = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestIdToken(getString(R.string.client_id))
@@ -95,19 +92,12 @@ public class LoginPage extends AppCompatActivity {
         });
     }
 
-    /**
-     * Cấu hình cho nút "Sign in with FEID".
-     */
     private void setupFeidSignInButton() {
         binding.feIdBtn.setOnClickListener(view -> {
             Intent intent = new Intent(LoginPage.this, LoginFeidPage.class);
             startActivity(intent);
         });
     }
-
-    /**
-     * Cấu hình cho RecyclerView hiển thị danh sách campus.
-     */
     private void setupCampusRecyclerView() {
         List<String> campuses = Arrays.asList("FU_Hòa Lạc", "FU_Hồ Chí Minh", "FU_Đà Nẵng", "FU_Cần Thơ", "FU_Quy Nhơn");
         campusAdapter = new CampusAdapter(this, campuses);
@@ -193,9 +183,6 @@ public class LoginPage extends AppCompatActivity {
                 });
     }
 
-    /**
-     * Chuyển đến màn hình HomePage và kết thúc màn hình hiện tại.
-     */
     private void goToHomePage() {
         Intent intent = new Intent(this, HomePage.class);
         startActivity(intent);
