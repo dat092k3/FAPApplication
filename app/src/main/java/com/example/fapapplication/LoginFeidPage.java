@@ -25,11 +25,12 @@ public class LoginFeidPage extends AppCompatActivity {
 
     private FirebaseAuth auth;
     private EditText email, password;
-    private Spinner spinnerCampus;
+    private Spinner spinnerCampus, spinnerRole;
     private Button btnLogin;
     private ImageView backButton;
-    private DatabaseReference campusRef, userRef;
+    private DatabaseReference campusRef, userRef, roleRef;
     private ArrayList<String> campusList = new ArrayList<>();
+    private ArrayList<String> roleList = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,6 +40,7 @@ public class LoginFeidPage extends AppCompatActivity {
         email = findViewById(R.id.etEmail);
         password = findViewById(R.id.etPassword);
         spinnerCampus = findViewById(R.id.spinnerCampus);
+        spinnerRole = findViewById(R.id.spinnerRole);
         btnLogin = findViewById(R.id.btnLogin);
         backButton = findViewById(R.id.backButton);
         TextView signup = findViewById(R.id.tvNoAccount);
@@ -46,8 +48,10 @@ public class LoginFeidPage extends AppCompatActivity {
         auth = FirebaseAuth.getInstance();
         campusRef = FirebaseDatabase.getInstance().getReference("Campus");
         userRef = FirebaseDatabase.getInstance().getReference("Users");
+        roleRef = FirebaseDatabase.getInstance().getReference("Role");
 
         loadCampusData();
+        loadRoleData();
 
         btnLogin.setOnClickListener(view -> loginUser());
 
@@ -81,10 +85,30 @@ public class LoginFeidPage extends AppCompatActivity {
         });
     }
 
+    private void loadRoleData() {
+        roleRef.get().addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                roleList.clear();
+                for (DataSnapshot snapshot : task.getResult().getChildren()) {
+                    roleList.add(snapshot.getValue(String.class)); // “Admin", “Teacher", “Student”
+                }
+
+                ArrayAdapter<String> adapter = new ArrayAdapter<>(
+                        this,
+                        android.R.layout.simple_spinner_item,
+                        roleList
+                );
+                adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                spinnerRole.setAdapter(adapter);
+            }
+        });
+    }
+
     private void loginUser() {
         String em = email.getText().toString().trim();
         String pass = password.getText().toString().trim();
         String selectedCampus = spinnerCampus.getSelectedItem().toString();
+        String selectedRole = spinnerRole.getSelectedItem().toString();
 
         if (em.isEmpty() || pass.isEmpty()) {
             Toast.makeText(this, "Please enter email and password", Toast.LENGTH_SHORT).show();
@@ -104,15 +128,39 @@ public class LoginFeidPage extends AppCompatActivity {
                             userRef.child(user.getUid()).get().addOnCompleteListener(dataTask -> {
                                 dialog.dismiss();
                                 if (dataTask.isSuccessful()) {
-                                    String campusInDB = dataTask.getResult().child("Campus").getValue(String.class);
+                                    DataSnapshot data = dataTask.getResult();
 
+                                    String campusInDB = data.child("Campus").getValue(String.class);
+                                    String roleInDB = data.child("Role").getValue(String.class);
+
+                                    // ✅ Check campus
                                     if (!selectedCampus.equals(campusInDB)) {
                                         auth.signOut();
                                         Toast.makeText(this, "Wrong campus selected!", Toast.LENGTH_LONG).show();
                                         return;
                                     }
 
-                                    Intent i = new Intent(LoginFeidPage.this, HomePage.class);
+                                    // ✅ Check role
+                                    if (!selectedRole.equals(roleInDB)) {
+                                        auth.signOut();
+                                        Toast.makeText(this, "Wrong role selected!", Toast.LENGTH_LONG).show();
+                                        return;
+                                    }
+
+                                    // ✅ Điều hướng theo Role
+                                    Intent i;
+                                    switch (roleInDB) {
+                                        case "Admin":
+                                            i = new Intent(LoginFeidPage.this, AdminDashboard.class);
+                                            break;
+                                        case "Teacher":
+                                            i = new Intent(LoginFeidPage.this, TeacherDashboard.class);
+                                            break;
+                                        default:
+                                            i = new Intent(LoginFeidPage.this, StudentDashboard.class);
+                                            break;
+                                    }
+
                                     i.putExtra("User UID", user.getUid());
                                     startActivity(i);
                                     finish();

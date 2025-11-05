@@ -12,6 +12,15 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.FAPApplication">
         <activity
+            android:name=".StudentDashboard"
+            android:exported="false" />
+        <activity
+            android:name=".TeacherDashboard"
+            android:exported="false" />
+        <activity
+            android:name=".AdminDashboard"
+            android:exported="false" />
+        <activity
             android:name=".SignUpActivity"
             android:exported="false" />
         <activity

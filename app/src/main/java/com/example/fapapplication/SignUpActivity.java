@@ -28,10 +28,13 @@ import com.google.firebase.database.FirebaseDatabase;
 
 public class SignUpActivity extends AppCompatActivity {
     private FirebaseAuth auth;
-    private DatabaseReference database;
+    private DatabaseReference userRef;
     private DatabaseReference campusRef;
-    private Spinner spinnerCampus;
+    private DatabaseReference roleRef;
+
+    private Spinner spinnerCampus, spinnerRole;
     private ArrayList<String> campusList = new ArrayList<>();
+    private ArrayList<String> roleList = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,8 +42,9 @@ public class SignUpActivity extends AppCompatActivity {
         setContentView(R.layout.activity_sign_up);
 
         auth = FirebaseAuth.getInstance();
-        database = FirebaseDatabase.getInstance().getReference("Users");
+        userRef = FirebaseDatabase.getInstance().getReference("Users");
         campusRef = FirebaseDatabase.getInstance().getReference("Campus");
+        roleRef = FirebaseDatabase.getInstance().getReference("Role");
 
         EditText studentId = findViewById(R.id.etStudentId);
         EditText fullName = findViewById(R.id.etFullName);
@@ -54,16 +58,20 @@ public class SignUpActivity extends AppCompatActivity {
         TextInputLayout tilBirthdate = findViewById(R.id.tilBirthdate);
 
         spinnerCampus = findViewById(R.id.spinnerCampus);
-        loadCampusData(); // ✅ Load campus từ Firebase vào Spinner
+        spinnerRole = findViewById(R.id.spinnerRole);
 
-        // 👉 Chọn ngày sinh
+        loadCampusData();
+        loadRoleData();
+
+        // chọn ngày sinh
         tilBirthdate.setEndIconOnClickListener(v -> showDatePicker(etBirthdate));
         etBirthdate.setOnClickListener(v -> showDatePicker(etBirthdate));
 
-        // 👉 Xử lý đăng ký
         signup.setOnClickListener(view -> {
             String fullname = fullName.getText().toString().trim();
-            String selectedCampus = spinnerCampus.getSelectedItem() != null ? spinnerCampus.getSelectedItem().toString() : "";
+            String selectedCampus = spinnerCampus.getSelectedItem().toString();
+            String selectedRole = spinnerRole.getSelectedItem().toString();
+
             String em = email.getText().toString().trim();
             String pass = password.getText().toString().trim();
             String confirmPass = confirm_password.getText().toString().trim();
@@ -71,10 +79,9 @@ public class SignUpActivity extends AppCompatActivity {
             String birthdate = etBirthdate.getText().toString().trim();
             String studentIDValue = studentId.getText().toString().trim();
 
-            // Kiểm tra input
             if (fullname.isEmpty() || em.isEmpty() || pass.isEmpty() ||
-                    confirmPass.isEmpty() || addr.isEmpty() || birthdate.isEmpty() ||
-                    selectedCampus.isEmpty() || studentIDValue.isEmpty()) {
+                    confirmPass.isEmpty() || addr.isEmpty() ||
+                    birthdate.isEmpty() || studentIDValue.isEmpty()) {
                 Toast.makeText(this, "Please fill in all fields", Toast.LENGTH_SHORT).show();
                 return;
             }
@@ -89,12 +96,12 @@ public class SignUpActivity extends AppCompatActivity {
                 return;
             }
 
+
             ProgressDialog progressDialog = new ProgressDialog(this);
             progressDialog.setMessage("Creating account...");
             progressDialog.setCancelable(false);
             progressDialog.show();
 
-            // đăng ký Firebase Auth
             auth.createUserWithEmailAndPassword(em, pass).addOnCompleteListener(task -> {
                 progressDialog.dismiss();
                 if (task.isSuccessful()) {
@@ -106,12 +113,12 @@ public class SignUpActivity extends AppCompatActivity {
                         map.put("Campus", selectedCampus);
                         map.put("FullName", fullname);
                         map.put("Email", em);
-                        map.put("Password", pass);
+                        map.put("Role", selectedRole);
                         map.put("Address", addr);
                         map.put("Birthdate", birthdate);
                         map.put("CreatedAt", System.currentTimeMillis());
 
-                        database.child(user.getUid()).setValue(map).addOnCompleteListener(saveTask -> {
+                        userRef.child(user.getUid()).setValue(map).addOnCompleteListener(saveTask -> {
                             if (saveTask.isSuccessful()) {
                                 Toast.makeText(this, "Sign up successful!", Toast.LENGTH_SHORT).show();
                                 startActivity(new Intent(this, LoginFeidPage.class));
@@ -128,7 +135,6 @@ public class SignUpActivity extends AppCompatActivity {
             });
         });
 
-        // 👉 Nút back
         backButton.setOnClickListener(view -> {
             startActivity(new Intent(this, LoginFeidPage.class));
             finish();
@@ -149,6 +155,28 @@ public class SignUpActivity extends AppCompatActivity {
             }
         });
     }
+
+    private void loadRoleData() {
+        roleRef.get().addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                roleList.clear();
+                for (DataSnapshot snapshot : task.getResult().getChildren()) {
+                    String role = snapshot.getValue(String.class);
+
+                    // ✅ Chỉ thêm nếu KHÔNG phải Admin
+                    if (!role.equalsIgnoreCase("Admin")) {
+                        roleList.add(role);
+                    }
+                }
+
+                ArrayAdapter<String> adapter = new ArrayAdapter<>(this,
+                        android.R.layout.simple_spinner_item, roleList);
+                adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                spinnerRole.setAdapter(adapter);
+            }
+        });
+    }
+
 
     private void showDatePicker(EditText etBirthdate) {
         Calendar calendar = Calendar.getInstance();
