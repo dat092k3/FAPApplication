@@ -23,8 +23,8 @@ public class AdminDashboard extends AppCompatActivity {
     private ImageButton menuButton;
     private BottomNavigationView bottomNavigationView;
 
-    // Khai báo các CardView để bắt sự kiện click
-    private CardView cardNotification, cardAppStatus, cardTimetable, cardExamSchedule, cardSemesterSchedule;
+    // Khai báo các CardView cho CRUD features
+    private CardView cardAccountManagement, cardSubjectManagement, cardClassManagement;
 
     // Firebase và Google Auth
     private FirebaseAuth auth;
@@ -33,7 +33,7 @@ public class AdminDashboard extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_home_page);
+        setContentView(R.layout.activity_admin_dashboard);
 
         // --- KIỂM TRA ĐĂNG NHẬP ---
         auth = FirebaseAuth.getInstance();
@@ -54,20 +54,23 @@ public class AdminDashboard extends AppCompatActivity {
         setupClickListeners();
     }
 
+    /**
+     * Ánh xạ tất cả các views từ layout vào các biến Java
+     */
     private void initializeViews() {
         // Ánh xạ các nút bấm và navigation
         menuButton = findViewById(R.id.menuButton);
         bottomNavigationView = findViewById(R.id.bottomNavigationView);
 
-        // Ánh xạ các CardView (thêm ID cho chúng trong file XML nếu bạn chưa có)
-        // Lưu ý: Tôi sẽ giả định bạn đã thêm các ID sau vào các CardView tương ứng
-        // Ví dụ: android:id="@+id/cardNotification" cho CardView đầu tiên
-        // Nếu bạn chưa thêm ID, code sẽ báo lỗi. Hãy quay lại file XML và thêm chúng.
-        // cardNotification = findViewById(R.id.cardNotification);
-        // cardAppStatus = findViewById(R.id.cardAppStatus);
-        // ... (làm tương tự cho các card khác)
+        // Ánh xạ các CardView cho CRUD features
+        cardAccountManagement = findViewById(R.id.cardAccountManagement);
+        cardSubjectManagement = findViewById(R.id.cardSubjectManagement);
+        cardClassManagement = findViewById(R.id.cardClassManagement);
     }
 
+    /**
+     * Thiết lập các bộ lắng nghe sự kiện cho các views
+     */
     private void setupClickListeners() {
         // Sự kiện click cho nút Menu
         menuButton.setOnClickListener(view -> showPopupMenu(view));
@@ -80,27 +83,33 @@ public class AdminDashboard extends AppCompatActivity {
                 return true;
             } else if (itemId == R.id.nav_profile) {
                 showToast("Profile clicked");
-                // Ví dụ: Chuyển sang trang Profile
-                // startActivity(new Intent(HomePage.this, ProfileActivity.class));
-                return true;
-            } else if (itemId == R.id.nav_profile) {
-                showToast("Settings clicked");
                 return true;
             }
             return false;
         });
 
-        // Thiết lập sự kiện click cho các CardView (sau khi đã thêm ID và ánh xạ)
-        /*
-        cardNotification.setOnClickListener(v -> showToast("Notification Card Clicked"));
-        cardAppStatus.setOnClickListener(v -> showToast("Application Status Card Clicked"));
-        */
+        // Thiết lập sự kiện click cho các CardView CRUD
+        cardAccountManagement.setOnClickListener(v -> {
+            Intent intent = new Intent(AdminDashboard.this, AccountListActivity.class);
+            startActivity(intent);
+        });
+
+        cardSubjectManagement.setOnClickListener(v -> {
+            Intent intent = new Intent(AdminDashboard.this, SubjectListActivity.class);
+            startActivity(intent);
+        });
+
+        cardClassManagement.setOnClickListener(v -> {
+            Intent intent = new Intent(AdminDashboard.this, ClassListActivity.class);
+            startActivity(intent);
+        });
     }
 
-    // Hiển thị một PopupMenu khi người dùng nhấn vào nút menu
+    /**
+     * Hiển thị PopupMenu khi người dùng nhấn vào nút menu
+     */
     private void showPopupMenu(View view) {
         PopupMenu popupMenu = new PopupMenu(this, view);
-        // Tạo menu động, bạn cũng có thể inflate từ một file XML
         popupMenu.getMenu().add("Profile");
         popupMenu.getMenu().add("Settings");
         popupMenu.getMenu().add("Sign Out");
@@ -123,6 +132,9 @@ public class AdminDashboard extends AppCompatActivity {
         popupMenu.show();
     }
 
+    /**
+     * Cấu hình Google Sign-In Client để có thể đăng xuất
+     */
     private void configureGoogleSignInClient() {
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestIdToken(getString(R.string.client_id))
@@ -131,7 +143,9 @@ public class AdminDashboard extends AppCompatActivity {
         googleSignInClient = GoogleSignIn.getClient(this, gso);
     }
 
-    // Hàm xử lý đăng xuất
+    /**
+     * Xử lý đăng xuất khỏi Firebase và Google
+     */
     private void signOut() {
         // Đăng xuất khỏi Firebase
         auth.signOut();
@@ -143,14 +157,18 @@ public class AdminDashboard extends AppCompatActivity {
         });
     }
 
-    // Hàm tiện ích để chuyển về MainActivity
+    /**
+     * Chuyển về màn hình LoginPage
+     */
     private void goToMainActivity() {
         Intent intent = new Intent(AdminDashboard.this, LoginPage.class);
         startActivity(intent);
-        finish(); // Đóng HomePage lại
+        finish();
     }
 
-    // Hàm tiện ích để hiển thị Toast
+    /**
+     * Hiển thị Toast message
+     */
     private void showToast(String message) {
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
     }
