@@ -21,8 +21,9 @@
       android:layout_width="50dp"
       android:layout_height="50dp"
       android:src="@drawable/ic_person"
-      android:scaleType="centerCrop"
-      android:background="@android:drawable/dialog_holo_light_frame"
+      android:scaleType="fitCenter"
+      android:background="@drawable/circle_background"
+      android:padding="8dp"
       android:contentDescription="User Avatar" />
 
     <!-- User Info -->
