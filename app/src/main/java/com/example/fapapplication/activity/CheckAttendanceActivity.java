@@ -1,4 +1,4 @@
-package com.example.project.activity;
+package com.example.fapapplication.activity;
 
 import android.os.Bundle;
 import android.text.Editable;
@@ -14,10 +14,10 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.project.R;
-import com.example.project.adapter.StudentAttendanceAdapter;
-import com.example.project.model.Student;
-import com.example.project.model.StudentAttendanceItem;
+import com.example.fapapplication.R;
+import com.example.fapapplication.adapter.StudentAttendanceAdapter;
+import com.example.fapapplication.model.Student;
+import com.example.fapapplication.model.StudentAttendanceItem;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.WriteBatch;

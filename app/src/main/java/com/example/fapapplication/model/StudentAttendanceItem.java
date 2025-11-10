@@ -1,4 +1,4 @@
-package com.example.project.model;
+package com.example.fapapplication.model;
 
 public class StudentAttendanceItem {
     private Student student;

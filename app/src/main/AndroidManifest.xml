@@ -30,8 +30,11 @@
           android:exported="false"
           android:name=".AdminDashboard" />
         <activity
-          android:exported="false"
-          android:name=".SignUpActivity" />
+            android:name=".HomePage"
+            android:exported="false" />
+        <activity
+            android:name=".activity.CheckAttendanceActivity"
+            android:exported="true" />
         <activity
           android:exported="false"
           android:name=".LoginFeidPage" />
