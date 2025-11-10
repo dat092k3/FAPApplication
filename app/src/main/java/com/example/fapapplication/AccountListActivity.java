@@ -3,11 +3,8 @@ package com.example.fapapplication;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.EditText;
 import android.widget.ImageButton;
-import android.widget.LinearLayout;
 import android.widget.ProgressBar;
-import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -15,34 +12,31 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.fapapplication.adapter.AccountAdapter;
+import com.example.fapapplication.entity.User;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class AccountListActivity extends AppCompatActivity {
 
     // UI Components
     private ImageButton backButton;
-    private ImageButton searchButton;
-    private ImageButton closeSearchButton;
-    private ImageButton clearFilterButton;
-    private EditText searchEditText;
-    private RecyclerView recyclerViewAccounts;
     private FloatingActionButton fabAddAccount;
+    private RecyclerView recyclerViewAccounts;
     private ProgressBar progressBar;
     private TextView errorTextView;
     private TextView emptyTextView;
-    private LinearLayout searchLayout;
-    private LinearLayout filterLayout;
-    private Spinner spinnerRoleFilter;
-    private Spinner spinnerCampusFilter;
 
     // Firebase
     private FirebaseAuth auth;
 
     // Adapter và Data
-    // TODO: Sẽ thêm AccountAdapter sau
-    // private AccountAdapter accountAdapter;
+    private AccountAdapter accountAdapter;
+    private List<User> accountList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,6 +51,9 @@ public class AccountListActivity extends AppCompatActivity {
             return;
         }
 
+        // Khởi tạo danh sách
+        accountList = new ArrayList<>();
+
         // Ánh xạ views
         initializeViews();
 
@@ -68,35 +65,39 @@ public class AccountListActivity extends AppCompatActivity {
     }
 
     /**
-     * Ánh xạ tất cả các views từ layout
+     * Ánh xạ các views từ layout
      */
     private void initializeViews() {
         backButton = findViewById(R.id.backButton);
-        searchButton = findViewById(R.id.searchButton);
-        closeSearchButton = findViewById(R.id.closeSearchButton);
-        clearFilterButton = findViewById(R.id.clearFilterButton);
-        searchEditText = findViewById(R.id.searchEditText);
-        recyclerViewAccounts = findViewById(R.id.recyclerViewAccounts);
         fabAddAccount = findViewById(R.id.fabAddAccount);
+        recyclerViewAccounts = findViewById(R.id.recyclerViewAccounts);
         progressBar = findViewById(R.id.progressBar);
         errorTextView = findViewById(R.id.errorTextView);
         emptyTextView = findViewById(R.id.emptyTextView);
-        searchLayout = findViewById(R.id.searchLayout);
-        filterLayout = findViewById(R.id.filterLayout);
-        spinnerRoleFilter = findViewById(R.id.spinnerRoleFilter);
-        spinnerCampusFilter = findViewById(R.id.spinnerCampusFilter);
     }
 
     /**
-     * Thiết lập RecyclerView với layout manager
+     * Thiết lập RecyclerView với adapter
      */
     private void setupRecyclerView() {
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         recyclerViewAccounts.setLayoutManager(layoutManager);
 
-        // TODO: Sẽ thêm adapter sau khi tạo AccountAdapter
-        // accountAdapter = new AccountAdapter(new ArrayList<>(), this);
-        // recyclerViewAccounts.setAdapter(accountAdapter);
+        accountAdapter = new AccountAdapter(this, accountList);
+        recyclerViewAccounts.setAdapter(accountAdapter);
+
+        // Thiết lập click listener cho adapter
+        accountAdapter.setOnAccountClickListener((user, position) -> {
+            // TODO: Navigate to Account Detail screen
+            Toast.makeText(this, "Clicked: " + user.getFullName(), Toast.LENGTH_SHORT).show();
+        });
+
+        // Thiết lập long-click listener cho adapter
+        accountAdapter.setOnAccountLongClickListener((user, position) -> {
+            // TODO: Show options menu
+            Toast.makeText(this, "Long clicked: " + user.getFullName(), Toast.LENGTH_SHORT).show();
+            return true;
+        });
     }
 
     /**
@@ -106,37 +107,9 @@ public class AccountListActivity extends AppCompatActivity {
         // Back button
         backButton.setOnClickListener(v -> finish());
 
-        // Search button - toggle search bar
-        searchButton.setOnClickListener(v -> {
-            if (searchLayout.getVisibility() == View.GONE) {
-                searchLayout.setVisibility(View.VISIBLE);
-                filterLayout.setVisibility(View.VISIBLE);
-            } else {
-                searchLayout.setVisibility(View.GONE);
-                filterLayout.setVisibility(View.GONE);
-            }
-        });
-
-        // Close search button
-        closeSearchButton.setOnClickListener(v -> {
-            searchLayout.setVisibility(View.GONE);
-            filterLayout.setVisibility(View.GONE);
-            searchEditText.setText("");
-            // TODO: Clear search filter
-        });
-
-        // Clear filter button
-        clearFilterButton.setOnClickListener(v -> {
-            spinnerRoleFilter.setSelection(0);
-            spinnerCampusFilter.setSelection(0);
-            // TODO: Clear filters and refresh list
-        });
-
         // Floating Action Button - Add new account
         fabAddAccount.setOnClickListener(v -> {
             // TODO: Navigate to Create Account screen
-            // Intent intent = new Intent(AccountListActivity.this, CreateAccountActivity.class);
-            // startActivity(intent);
             Toast.makeText(this, "Add Account clicked", Toast.LENGTH_SHORT).show();
         });
     }
@@ -156,14 +129,23 @@ public class AccountListActivity extends AppCompatActivity {
         errorTextView.setText(message);
         errorTextView.setVisibility(View.VISIBLE);
         recyclerViewAccounts.setVisibility(View.GONE);
+        emptyTextView.setVisibility(View.GONE);
     }
 
     /**
-     * Hiển thị/ẩn empty state
+     * Ẩn error message
      */
-    private void showEmptyState(boolean show) {
-        emptyTextView.setVisibility(show ? View.VISIBLE : View.GONE);
-        recyclerViewAccounts.setVisibility(show ? View.GONE : View.VISIBLE);
+    private void hideError() {
+        errorTextView.setVisibility(View.GONE);
+    }
+
+    /**
+     * Cập nhật empty state
+     */
+    private void updateEmptyState() {
+        boolean isEmpty = accountAdapter.getItemCount() == 0;
+        emptyTextView.setVisibility(isEmpty ? View.VISIBLE : View.GONE);
+        recyclerViewAccounts.setVisibility(isEmpty ? View.GONE : View.VISIBLE);
     }
 
     /**

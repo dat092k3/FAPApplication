@@ -25,7 +25,7 @@
       android:layout_width="40dp"
       android:layout_height="40dp"
       android:background="@android:color/transparent"
-      android:src="@android:drawable/ic_menu_revert"
+      android:src="@drawable/ic_back"
       android:contentDescription="Back"
       app:tint="#FFFFFF" />
 
@@ -49,7 +49,7 @@
       android:layout_width="40dp"
       android:layout_height="40dp"
       android:background="@android:color/transparent"
-      android:src="@android:drawable/ic_menu_search"
+      android:src="@drawable/ic_search"
       android:contentDescription="Search"
       app:tint="#FFFFFF" />
   </LinearLayout>
@@ -72,7 +72,7 @@
       android:layout_weight="1"
       android:hint="Search by name, email..."
       android:padding="12dp"
-      android:background="@android:drawable/edit_text"
+      android:background="@drawable/edit_text_background"
       android:textSize="14sp" />
 
     <ImageButton
@@ -80,11 +80,12 @@
       android:layout_width="40dp"
       android:layout_height="40dp"
       android:background="@android:color/transparent"
-      android:src="@android:drawable/ic_menu_close_clear_cancel"
-      android:contentDescription="Close Search" />
+      android:src="@drawable/ic_back"
+      android:contentDescription="Close Search"
+      app:tint="#23437B" />
   </LinearLayout>
 
-  <!-- Filter Chips Layout -->
+  <!-- Filter Layout (initially hidden) -->
   <LinearLayout
     android:id="@+id/filterLayout"
     android:layout_width="match_parent"
@@ -118,14 +119,6 @@
       android:layout_height="wrap_content"
       android:layout_weight="1"
       android:padding="8dp" />
-
-    <ImageButton
-      android:id="@+id/clearFilterButton"
-      android:layout_width="40dp"
-      android:layout_height="40dp"
-      android:background="@android:color/transparent"
-      android:src="@android:drawable/ic_menu_close_clear_cancel"
-      android:contentDescription="Clear Filters" />
   </LinearLayout>
 
   <!-- Progress Indicator -->
