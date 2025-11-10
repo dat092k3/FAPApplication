@@ -4,9 +4,11 @@
   android:layout_width="match_parent"
   android:layout_height="wrap_content"
   android:layout_margin="8dp"
-  app:cardCornerRadius="8dp"
-  app:cardElevation="2dp"
-  android:foreground="?android:attr/selectableItemBackground">
+  app:cardCornerRadius="10dp"
+  app:cardElevation="4dp"
+  android:clickable="true"
+  android:focusable="true"
+  android:foreground="?attr/selectableItemBackground">
 
   <LinearLayout
     android:layout_width="match_parent"
@@ -15,87 +17,72 @@
     android:padding="16dp"
     android:gravity="center_vertical">
 
-    <!-- Avatar/Icon -->
-    <ImageView
-      android:id="@+id/imageViewAvatar"
+    <!-- Avatar placeholder -->
+    <TextView
+      android:id="@+id/avatarTextView"
       android:layout_width="50dp"
       android:layout_height="50dp"
-      android:src="@drawable/ic_person"
-      android:scaleType="fitCenter"
       android:background="@drawable/circle_background"
-      android:padding="8dp"
-      android:contentDescription="User Avatar" />
+      android:text="A"
+      android:textSize="20sp"
+      android:textColor="#FFFFFF"
+      android:textStyle="bold"
+      android:gravity="center" />
 
-    <!-- User Info -->
+    <!-- Account info -->
     <LinearLayout
       android:layout_width="0dp"
       android:layout_height="wrap_content"
       android:layout_weight="1"
-      android:orientation="vertical"
       android:layout_marginStart="16dp"
-      android:layout_marginEnd="8dp">
+      android:orientation="vertical">
 
       <TextView
-        android:id="@+id/textViewName"
+        android:id="@+id/nameTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Full Name"
+        android:textSize="16sp"
         android:textColor="#23437B"
-        android:textStyle="bold"
-        android:textSize="16sp" />
+        android:textStyle="bold" />
 
       <TextView
-        android:id="@+id/textViewEmail"
+        android:id="@+id/emailTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="email@example.com"
-        android:textColor="#8D8D8D"
         android:textSize="14sp"
+        android:textColor="#757575"
         android:layout_marginTop="4dp" />
 
       <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:layout_marginTop="8dp">
+        android:layout_marginTop="4dp">
 
         <TextView
-          android:id="@+id/textViewRole"
+          android:id="@+id/roleTextView"
           android:layout_width="wrap_content"
           android:layout_height="wrap_content"
           android:text="Role"
-          android:textColor="#F49D00"
           android:textSize="12sp"
-          android:background="#FFF4E0"
-          android:paddingStart="8dp"
-          android:paddingEnd="8dp"
-          android:paddingTop="4dp"
-          android:paddingBottom="4dp" />
+          android:textColor="#F49D00"
+          android:textStyle="bold"
+          android:padding="4dp"
+          android:background="@drawable/edit_text_background" />
 
         <TextView
-          android:id="@+id/textViewCampus"
+          android:id="@+id/campusTextView"
           android:layout_width="wrap_content"
           android:layout_height="wrap_content"
           android:text="Campus"
-          android:textColor="#23437B"
           android:textSize="12sp"
+          android:textColor="#23437B"
+          android:padding="4dp"
           android:layout_marginStart="8dp"
-          android:background="#E3F2FD"
-          android:paddingStart="8dp"
-          android:paddingEnd="8dp"
-          android:paddingTop="4dp"
-          android:paddingBottom="4dp" />
+          android:background="@drawable/edit_text_background" />
       </LinearLayout>
     </LinearLayout>
-
-    <!-- Status Indicator -->
-    <ImageView
-      android:id="@+id/imageViewStatus"
-      android:layout_width="24dp"
-      android:layout_height="24dp"
-      android:src="@android:drawable/presence_online"
-      android:contentDescription="Account Status"
-      android:layout_marginStart="8dp" />
   </LinearLayout>
-
 </androidx.cardview.widget.CardView>

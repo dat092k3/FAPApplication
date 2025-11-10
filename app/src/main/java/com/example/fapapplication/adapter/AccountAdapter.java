@@ -1,10 +1,10 @@
 package com.example.fapapplication.adapter;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -17,75 +17,83 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Adapter for displaying user accounts in a RecyclerView.
- * Handles click and long-press interactions.
+ * Adapter để hiển thị danh sách user accounts trong RecyclerView.
+ * Hỗ trợ click listeners và cập nhật dữ liệu.
  */
 public class AccountAdapter extends RecyclerView.Adapter<AccountAdapter.AccountViewHolder> {
 
-    private List<User> accountList;
-    private final Context context;
+    private Context context;
+    private List<User> userList;
+    private OnAccountClickListener clickListener;
 
-    // Interface cho sự kiện click
+    /**
+     * Constructor cho AccountAdapter
+     *
+     * @param context Context của activity
+     * @param userList Danh sách users cần hiển thị
+     */
+    public AccountAdapter(Context context, List<User> userList) {
+        this.context = context;
+        this.userList = userList != null ? userList : new ArrayList<>();
+    }
+
+    /**
+     * Interface để xử lý click events
+     */
     public interface OnAccountClickListener {
-        /**
-         * Called when an account item is clicked
-         */
         void onAccountClick(User user, int position);
     }
 
-    // Interface cho sự kiện long-click
-    public interface OnAccountLongClickListener {
-        /**
-         * Called when an account item is long-pressed
-         * @return true if the event was consumed, false otherwise
-         */
-        boolean onAccountLongClick(User user, int position);
-    }
-
-    private OnAccountClickListener clickListener;
-    private OnAccountLongClickListener longClickListener;
-
     /**
-     * Constructor
+     * Thiết lập click listener
      *
-     * @param context Context của activity
-     * @param accountList Danh sách user accounts
+     * @param listener Click listener
      */
-    public AccountAdapter(Context context, List<User> accountList) {
-        this.context = context;
-        this.accountList = accountList != null ? accountList : new ArrayList<>();
+    public void setOnAccountClickListener(OnAccountClickListener listener) {
+        this.clickListener = listener;
     }
 
     @NonNull
     @Override
     public AccountViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_account, parent, false);
+        View view = LayoutInflater.from(context).inflate(R.layout.item_account, parent, false);
         return new AccountViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(@NonNull AccountViewHolder holder, int position) {
-        User user = accountList.get(position);
+        User user = userList.get(position);
 
-        // Hiển thị thông tin user
-        String fullName = user.getFullName() != null ? user.getFullName() : "N/A";
-        String email = user.getEmail() != null ? user.getEmail() : "N/A";
-        String role = user.getRole() != null ? user.getRole() : "Unknown";
-        String campus = user.getCampus() != null ? user.getCampus() : "N/A";
+        // Thiết lập avatar text (chữ cái đầu của tên)
+        String avatarText = "?";
+        if (user.getName() != null && !user.getName().isEmpty()) {
+            avatarText = user.getName().substring(0, 1).toUpperCase();
+        }
+        holder.avatarTextView.setText(avatarText);
 
-        holder.textViewName.setText(fullName);
-        holder.textViewEmail.setText(email);
-        holder.textViewRole.setText(role);
-        holder.textViewCampus.setText(campus);
-
-        // Hiển thị trạng thái active/inactive
-        Boolean isActive = user.getIsActive();
-        if (isActive != null && isActive) {
-            holder.imageViewStatus.setImageResource(android.R.drawable.presence_online);
-            holder.imageViewStatus.setContentDescription("Active");
+        // Thiết lập màu avatar dựa trên role
+        String role = user.getRole();
+        if ("Admin".equals(role)) {
+            holder.avatarTextView.setBackgroundColor(Color.parseColor("#F44336")); // Red
+        } else if ("Teacher".equals(role)) {
+            holder.avatarTextView.setBackgroundColor(Color.parseColor("#4CAF50")); // Green
+        } else if ("Student".equals(role)) {
+            holder.avatarTextView.setBackgroundColor(Color.parseColor("#2196F3")); // Blue
         } else {
-            holder.imageViewStatus.setImageResource(android.R.drawable.presence_offline);
-            holder.imageViewStatus.setContentDescription("Inactive");
+            holder.avatarTextView.setBackgroundColor(Color.parseColor("#757575")); // Gray
+        }
+
+        // Thiết lập thông tin user
+        holder.nameTextView.setText(user.getName() != null ? user.getName() : "No Name");
+        holder.emailTextView.setText(user.getEmail() != null ? user.getEmail() : "No Email");
+        holder.roleTextView.setText(user.getRole() != null ? user.getRole() : "No Role");
+
+        // Hiển thị campus nếu có
+        if (user.getCampus() != null && !user.getCampus().isEmpty()) {
+            holder.campusTextView.setVisibility(View.VISIBLE);
+            holder.campusTextView.setText(user.getCampus());
+        } else {
+            holder.campusTextView.setVisibility(View.GONE);
         }
 
         // Thiết lập click listener
@@ -94,74 +102,41 @@ public class AccountAdapter extends RecyclerView.Adapter<AccountAdapter.AccountV
                 clickListener.onAccountClick(user, position);
             }
         });
-
-        // Thiết lập long-press listener
-        holder.itemView.setOnLongClickListener(v -> {
-            if (longClickListener != null) {
-                return longClickListener.onAccountLongClick(user, position);
-            }
-            return false;
-        });
     }
 
     @Override
     public int getItemCount() {
-        return accountList.size();
+        return userList.size();
     }
 
     /**
-     * Cập nhật danh sách accounts
+     * Cập nhật danh sách users và refresh RecyclerView
      *
-     * @param newAccountList Danh sách mới
+     * @param newUserList Danh sách users mới
      */
-    public void updateAccountList(List<User> newAccountList) {
-        this.accountList = newAccountList != null ? newAccountList : new ArrayList<>();
+    public void updateUsers(List<User> newUserList) {
+        this.userList = newUserList != null ? newUserList : new ArrayList<>();
         notifyDataSetChanged();
     }
 
     /**
-     * Thiết lập click listener
+     * ViewHolder class chứa các views của từng item
      */
-    public void setOnAccountClickListener(OnAccountClickListener listener) {
-        this.clickListener = listener;
-    }
+    static class AccountViewHolder extends RecyclerView.ViewHolder {
+        TextView avatarTextView;
+        TextView nameTextView;
+        TextView emailTextView;
+        TextView roleTextView;
+        TextView campusTextView;
 
-    /**
-     * Thiết lập long-click listener
-     */
-    public void setOnAccountLongClickListener(OnAccountLongClickListener listener) {
-        this.longClickListener = listener;
-    }
-
-    /**
-     * Lấy user tại vị trí position
-     */
-    public User getUserAtPosition(int position) {
-        if (position >= 0 && position < accountList.size()) {
-            return accountList.get(position);
-        }
-        return null;
-    }
-
-    /**
-     * ViewHolder class để giữ tham chiếu đến các views của một item
-     */
-    public static class AccountViewHolder extends RecyclerView.ViewHolder {
-        ImageView imageViewAvatar;
-        TextView textViewName;
-        TextView textViewEmail;
-        TextView textViewRole;
-        TextView textViewCampus;
-        ImageView imageViewStatus;
-
-        public AccountViewHolder(@NonNull View itemView) {
+        AccountViewHolder(@NonNull View itemView) {
             super(itemView);
-            imageViewAvatar = itemView.findViewById(R.id.imageViewAvatar);
-            textViewName = itemView.findViewById(R.id.textViewName);
-            textViewEmail = itemView.findViewById(R.id.textViewEmail);
-            textViewRole = itemView.findViewById(R.id.textViewRole);
-            textViewCampus = itemView.findViewById(R.id.textViewCampus);
-            imageViewStatus = itemView.findViewById(R.id.imageViewStatus);
+
+            avatarTextView = itemView.findViewById(R.id.avatarTextView);
+            nameTextView = itemView.findViewById(R.id.nameTextView);
+            emailTextView = itemView.findViewById(R.id.emailTextView);
+            roleTextView = itemView.findViewById(R.id.roleTextView);
+            campusTextView = itemView.findViewById(R.id.campusTextView);
         }
     }
 }

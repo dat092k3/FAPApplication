@@ -2,8 +2,10 @@ package com.example.fapapplication;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -15,296 +17,207 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.fapapplication.adapter.AccountAdapter;
 import com.example.fapapplication.entity.User;
-import com.example.fapapplication.repository.UserRepository;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
+import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Activity hiển thị danh sách tất cả user accounts trong hệ thống.
+ * Cho phép Admin tìm kiếm, xem và quản lý các accounts.
+ */
 public class AccountListActivity extends AppCompatActivity {
 
-    private static final String TAG = "AccountListActivity";
-
-    // UI Components
-    private ImageButton backButton;
-    private FloatingActionButton fabAddAccount;
-    private RecyclerView recyclerViewAccounts;
+    private RecyclerView recyclerView;
+    private AccountAdapter adapter;
     private ProgressBar progressBar;
-    private TextView errorTextView;
     private TextView emptyTextView;
+    private EditText searchEditText;
+    private FloatingActionButton fabAddAccount;
+    private ImageButton backButton;
 
-    // Firebase và Repository
+    private List<User> allUsers;
     private FirebaseAuth auth;
-    private UserRepository userRepository;
-
-    // Adapter và Data
-    private AccountAdapter accountAdapter;
+    private DatabaseReference usersRef;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_account_list);
 
-        try {
-            setContentView(R.layout.activity_account_list);
-
-            // Kiểm tra đăng nhập
-            auth = FirebaseAuth.getInstance();
-            FirebaseUser currentUser = auth.getCurrentUser();
-            if (currentUser == null) {
-                Log.w(TAG, "User not logged in, redirecting to login");
-                goToLoginPage();
-                return;
-            }
-
-            // Khởi tạo repository
-            userRepository = new UserRepository();
-
-            // Ánh xạ views
-            initializeViews();
-
-            // Thiết lập RecyclerView
-            setupRecyclerView();
-
-            // Thiết lập click listeners
-            setupClickListeners();
-
-            // Load data từ Firebase Realtime Database
-            loadAccounts();
-
-        } catch (Exception e) {
-            Log.e(TAG, "Error in onCreate", e);
-            Toast.makeText(this, "Error initializing screen: " + e.getMessage(), Toast.LENGTH_LONG).show();
+        // Kiểm tra authentication
+        auth = FirebaseAuth.getInstance();
+        if (auth.getCurrentUser() == null) {
             finish();
-        }
-    }
-
-    /**
-     * Ánh xạ các views từ layout
-     */
-    private void initializeViews() {
-        try {
-            backButton = findViewById(R.id.backButton);
-            fabAddAccount = findViewById(R.id.fabAddAccount);
-            recyclerViewAccounts = findViewById(R.id.recyclerViewAccounts);
-            progressBar = findViewById(R.id.progressBar);
-            errorTextView = findViewById(R.id.errorTextView);
-            emptyTextView = findViewById(R.id.emptyTextView);
-
-            // Kiểm tra null views
-            if (backButton == null || fabAddAccount == null || recyclerViewAccounts == null ||
-                    progressBar == null || errorTextView == null || emptyTextView == null) {
-                throw new IllegalStateException("One or more views are null");
-            }
-
-            Log.d(TAG, "Views initialized successfully");
-        } catch (Exception e) {
-            Log.e(TAG, "Error initializing views", e);
-            throw e;
-        }
-    }
-
-    /**
-     * Thiết lập RecyclerView với adapter
-     */
-    private void setupRecyclerView() {
-        try {
-            LinearLayoutManager layoutManager = new LinearLayoutManager(this);
-            recyclerViewAccounts.setLayoutManager(layoutManager);
-
-            // Khởi tạo adapter với empty list
-            accountAdapter = new AccountAdapter(this, new java.util.ArrayList<>());
-            recyclerViewAccounts.setAdapter(accountAdapter);
-
-            // Thiết lập click listener cho adapter
-            accountAdapter.setOnAccountClickListener((user, position) -> {
-                try {
-                    // TODO: Navigate to Account Detail screen
-                    Toast.makeText(this, "Clicked: " + (user != null ? user.getFullName() : "Unknown"), Toast.LENGTH_SHORT).show();
-                } catch (Exception e) {
-                    Log.e(TAG, "Error handling account click", e);
-                }
-            });
-
-            // Thiết lập long-click listener cho adapter
-            accountAdapter.setOnAccountLongClickListener((user, position) -> {
-                try {
-                    // TODO: Show options menu
-                    Toast.makeText(this, "Long clicked: " + (user != null ? user.getFullName() : "Unknown"), Toast.LENGTH_SHORT).show();
-                    return true;
-                } catch (Exception e) {
-                    Log.e(TAG, "Error handling account long-click", e);
-                    return false;
-                }
-            });
-
-            Log.d(TAG, "RecyclerView setup completed");
-        } catch (Exception e) {
-            Log.e(TAG, "Error setting up RecyclerView", e);
-            throw e;
-        }
-    }
-
-    /**
-     * Thiết lập các bộ lắng nghe sự kiện
-     */
-    private void setupClickListeners() {
-        try {
-            // Back button
-            if (backButton != null) {
-                backButton.setOnClickListener(v -> finish());
-            }
-
-            // Floating Action Button - Add new account
-            if (fabAddAccount != null) {
-                fabAddAccount.setOnClickListener(v -> {
-                    try {
-                        // TODO: Navigate to Create Account screen
-                        Toast.makeText(this, "Add Account clicked", Toast.LENGTH_SHORT).show();
-                    } catch (Exception e) {
-                        Log.e(TAG, "Error handling FAB click", e);
-                    }
-                });
-            }
-
-            Log.d(TAG, "Click listeners setup completed");
-        } catch (Exception e) {
-            Log.e(TAG, "Error setting up click listeners", e);
-        }
-    }
-
-    /**
-     * Load danh sách accounts từ Firebase Realtime Database
-     */
-    private void loadAccounts() {
-        if (userRepository == null) {
-            Log.e(TAG, "UserRepository is null");
-            showError("Repository not initialized");
             return;
         }
 
-        showLoading(true);
-        hideError();
+        // Khởi tạo Firebase reference
+        usersRef = FirebaseDatabase.getInstance().getReference("Users");
 
-        Log.d(TAG, "Starting to load accounts from Firebase");
+        // Khởi tạo views
+        initializeViews();
 
-        userRepository.getAllUsers(new UserRepository.OnUsersLoadedListener() {
+        // Thiết lập RecyclerView
+        setupRecyclerView();
+
+        // Thiết lập listeners
+        setupListeners();
+
+        // Load dữ liệu từ Firebase
+        loadUsersFromFirebase();
+    }
+
+    /**
+     * Khởi tạo tất cả các views
+     */
+    private void initializeViews() {
+        recyclerView = findViewById(R.id.recyclerViewAccounts);
+        progressBar = findViewById(R.id.progressBar);
+        emptyTextView = findViewById(R.id.emptyTextView);
+        searchEditText = findViewById(R.id.searchEditText);
+        fabAddAccount = findViewById(R.id.fabAddAccount);
+        backButton = findViewById(R.id.backButton);
+
+        allUsers = new ArrayList<>();
+    }
+
+    /**
+     * Thiết lập RecyclerView với adapter và layout manager
+     */
+    private void setupRecyclerView() {
+        adapter = new AccountAdapter(this, new ArrayList<>());
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        recyclerView.setAdapter(adapter);
+
+        // Thiết lập click listener cho items
+        adapter.setOnAccountClickListener((user, position) -> {
+            // TODO: Navigate to detail screen
+            Toast.makeText(this, "Clicked: " + user.getFullName(), Toast.LENGTH_SHORT).show();
+        });
+    }
+
+    /**
+     * Thiết lập các listeners cho buttons và search
+     */
+    private void setupListeners() {
+        // Back button
+        backButton.setOnClickListener(v -> finish());
+
+        // FAB để thêm account mới
+        fabAddAccount.setOnClickListener(v -> {
+            // TODO: Navigate to Create Account screen
+            Toast.makeText(this, "Add Account clicked", Toast.LENGTH_SHORT).show();
+        });
+
+        // Search listener
+        searchEditText.addTextChangedListener(new TextWatcher() {
             @Override
-            public void onSuccess(List<User> users) {
-                try {
-                    Log.d(TAG, "Accounts loaded successfully, count: " + (users != null ? users.size() : 0));
-                    showLoading(false);
-
-                    if (users != null && !users.isEmpty()) {
-                        accountAdapter.updateAccountList(users);
-                        updateEmptyState();
-                        Log.d(TAG, "Adapter updated with " + users.size() + " users");
-                    } else {
-                        accountAdapter.updateAccountList(null);
-                        updateEmptyState();
-                        Log.d(TAG, "No users found");
-                    }
-                } catch (Exception e) {
-                    Log.e(TAG, "Error processing loaded users", e);
-                    showLoading(false);
-                    showError("Error displaying accounts: " + e.getMessage());
-                }
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
             }
 
             @Override
-            public void onError(String errorMessage) {
-                Log.e(TAG, "Error loading users: " + errorMessage);
-                showLoading(false);
-                showError(errorMessage != null ? errorMessage : "Failed to load accounts");
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                filterUsers(s.toString());
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
             }
         });
     }
 
     /**
-     * Hiển thị/ẩn progress indicator
+     * Load danh sách users từ Firebase Realtime Database
      */
-    private void showLoading(boolean show) {
-        try {
-            if (progressBar != null) {
-                progressBar.setVisibility(show ? View.VISIBLE : View.GONE);
+    private void loadUsersFromFirebase() {
+        // Hiển thị loading
+        progressBar.setVisibility(View.VISIBLE);
+        emptyTextView.setVisibility(View.GONE);
+
+        // Đọc dữ liệu từ Firebase
+        usersRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                allUsers.clear();
+
+                // Parse từng user từ Firebase
+                for (DataSnapshot userSnapshot : dataSnapshot.getChildren()) {
+                    try {
+                        User user = new User();
+                        user.setId(userSnapshot.child("UID").getValue(String.class));
+                        user.setName(userSnapshot.child("FullName").getValue(String.class));
+                        user.setEmail(userSnapshot.child("Email").getValue(String.class));
+                        user.setRole(userSnapshot.child("Role").getValue(String.class));
+                        user.setCampus(userSnapshot.child("Campus").getValue(String.class));
+                        user.setBirthdate(userSnapshot.child("Birthdate").getValue(String.class));
+
+                        allUsers.add(user);
+                    } catch (Exception e) {
+                        // Bỏ qua user nếu có lỗi parse
+                    }
+                }
+
+                // Cập nhật UI
+                progressBar.setVisibility(View.GONE);
+
+                if (allUsers.isEmpty()) {
+                    emptyTextView.setVisibility(View.VISIBLE);
+                    recyclerView.setVisibility(View.GONE);
+                } else {
+                    emptyTextView.setVisibility(View.GONE);
+                    recyclerView.setVisibility(View.VISIBLE);
+                    adapter.updateUsers(allUsers);
+                }
             }
-            if (recyclerViewAccounts != null) {
-                recyclerViewAccounts.setVisibility(show ? View.GONE : View.VISIBLE);
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                // Xử lý lỗi
+                progressBar.setVisibility(View.GONE);
+                emptyTextView.setVisibility(View.VISIBLE);
+                emptyTextView.setText("Error loading accounts");
+                Toast.makeText(AccountListActivity.this,
+                        "Error: " + databaseError.getMessage(),
+                        Toast.LENGTH_SHORT).show();
             }
-        } catch (Exception e) {
-            Log.e(TAG, "Error showing/hiding loading", e);
-        }
+        });
     }
 
     /**
-     * Hiển thị/ẩn error message
+     * Lọc danh sách users theo search query
      */
-    private void showError(String message) {
-        try {
-            if (errorTextView != null) {
-                errorTextView.setText(message != null ? message : "Unknown error");
-                errorTextView.setVisibility(View.VISIBLE);
-            }
-            if (recyclerViewAccounts != null) {
-                recyclerViewAccounts.setVisibility(View.GONE);
-            }
-            if (emptyTextView != null) {
-                emptyTextView.setVisibility(View.GONE);
-            }
-        } catch (Exception e) {
-            Log.e(TAG, "Error showing error message", e);
+    private void filterUsers(String query) {
+        if (query.isEmpty()) {
+            adapter.updateUsers(allUsers);
+            return;
         }
-    }
 
-    /**
-     * Ẩn error message
-     */
-    private void hideError() {
-        try {
-            if (errorTextView != null) {
-                errorTextView.setVisibility(View.GONE);
+        List<User> filteredList = new ArrayList<>();
+        String lowerQuery = query.toLowerCase();
+
+        for (User user : allUsers) {
+            if ((user.getName() != null && user.getName().toLowerCase().contains(lowerQuery)) ||
+                    (user.getEmail() != null && user.getEmail().toLowerCase().contains(lowerQuery)) ||
+                    (user.getRole() != null && user.getRole().toLowerCase().contains(lowerQuery)) ||
+                    (user.getCampus() != null && user.getCampus().toLowerCase().contains(lowerQuery))) {
+                filteredList.add(user);
             }
-        } catch (Exception e) {
-            Log.e(TAG, "Error hiding error message", e);
         }
-    }
 
-    /**
-     * Cập nhật empty state
-     */
-    private void updateEmptyState() {
-        try {
-            boolean isEmpty = accountAdapter == null || accountAdapter.getItemCount() == 0;
-            if (emptyTextView != null) {
-                emptyTextView.setVisibility(isEmpty ? View.VISIBLE : View.GONE);
-            }
-            if (recyclerViewAccounts != null) {
-                recyclerViewAccounts.setVisibility(isEmpty ? View.GONE : View.VISIBLE);
-            }
-        } catch (Exception e) {
-            Log.e(TAG, "Error updating empty state", e);
-        }
-    }
+        adapter.updateUsers(filteredList);
 
-    /**
-     * Chuyển về màn hình đăng nhập nếu chưa đăng nhập
-     */
-    private void goToLoginPage() {
-        try {
-            Intent intent = new Intent(AccountListActivity.this, LoginPage.class);
-            startActivity(intent);
-            finish();
-        } catch (Exception e) {
-            Log.e(TAG, "Error navigating to login", e);
-        }
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        // Reload data khi quay lại màn hình để cập nhật thay đổi
-        if (userRepository != null) {
-            loadAccounts();
+        if (filteredList.isEmpty()) {
+            emptyTextView.setVisibility(View.VISIBLE);
+            emptyTextView.setText("No matches found");
+        } else {
+            emptyTextView.setVisibility(View.GONE);
         }
     }
 }
