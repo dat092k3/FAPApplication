@@ -136,8 +136,10 @@ public class AccountListActivity extends AppCompatActivity {
 
         // Thiết lập click listener cho items
         adapter.setOnAccountClickListener((user, position) -> {
-            // TODO: Navigate to detail screen
-            Toast.makeText(this, "Clicked: " + user.getFullName(), Toast.LENGTH_SHORT).show();
+            // Navigate to AccountDetailActivity
+            Intent intent = new Intent(AccountListActivity.this, AccountDetailActivity.class);
+            intent.putExtra("USER_ID", user.getId());
+            startActivity(intent);
         });
     }
 

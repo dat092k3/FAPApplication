@@ -176,7 +176,6 @@ public class User {
     }
 
     // Helper methods để tương thích với Firebase
-
     /**
      * Lấy FullName (tương đương với name trong Room)
      */
@@ -278,5 +277,13 @@ public class User {
             user.setIsActive(true);
         }
         return user;
+    }
+
+    /**
+     * Check if user is active (primitive boolean)
+     * Java convention for boolean getters
+     */
+    public boolean isActive() {
+        return isActive != null ? isActive : true;
     }
 }

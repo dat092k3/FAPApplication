@@ -1,0 +1,450 @@
+package com.example.fapapplication;
+
+import android.app.DatePickerDialog;
+import android.os.Bundle;
+import android.view.View;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ImageButton;
+import android.widget.ProgressBar;
+import android.widget.Spinner;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SwitchCompat;
+
+import com.example.fapapplication.entity.User;
+import com.example.fapapplication.repository.UserRepository;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.List;
+import java.util.Locale;
+
+/**
+ * Activity để xem và chỉnh sửa thông tin chi tiết của user account
+ */
+public class AccountDetailActivity extends AppCompatActivity {
+
+    // UI Components
+    private ImageButton backButton;
+    private TextView tvTitle, tvUserAvatar, tvUserId, tvCreatedAt, tvAccountStatus, tvError;
+    private EditText etFullName, etEmail, etStudentId, etBirthdate, etAddress;
+    private Spinner spinnerRole, spinnerCampus;
+    private SwitchCompat switchAccountStatus;
+    private Button btnCancel, btnSave;
+    private ProgressBar progressBar;
+    private View formContainer;
+
+    // Data
+    private String userId;
+    private User currentUser;
+    private UserRepository userRepository;
+
+    // Filter data từ Firebase
+    private List<String> roleList = new ArrayList<>();
+    private List<String> campusList = new ArrayList<>();
+
+    // Flags
+    private boolean isLoading = false;
+    private boolean hasUnsavedChanges = false;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_account_detail);
+
+        // Kiểm tra authentication
+        if (FirebaseAuth.getInstance().getCurrentUser() == null) {
+            Toast.makeText(this, "Please login first", Toast.LENGTH_SHORT).show();
+            finish();
+            return;
+        }
+
+        // Lấy userId từ Intent
+        userId = getIntent().getStringExtra("USER_ID");
+        if (userId == null || userId.isEmpty()) {
+            Toast.makeText(this, "Invalid user ID", Toast.LENGTH_SHORT).show();
+            finish();
+            return;
+        }
+
+        // Initialize
+        userRepository = new UserRepository();
+        initializeViews();
+        setupClickListeners();
+        loadFilterData();
+        loadUserData();
+    }
+
+    /**
+     * Khởi tạo tất cả views
+     */
+    private void initializeViews() {
+        try {
+            backButton = findViewById(R.id.backButton);
+            tvTitle = findViewById(R.id.tvTitle);
+            tvUserAvatar = findViewById(R.id.tvUserAvatar);
+            tvUserId = findViewById(R.id.tvUserId);
+            tvCreatedAt = findViewById(R.id.tvCreatedAt);
+            tvAccountStatus = findViewById(R.id.tvAccountStatus);
+            tvError = findViewById(R.id.tvError);
+
+            etFullName = findViewById(R.id.etFullName);
+            etEmail = findViewById(R.id.etEmail);
+            etStudentId = findViewById(R.id.etStudentId);
+            etBirthdate = findViewById(R.id.etBirthdate);
+            etAddress = findViewById(R.id.etAddress);
+
+            spinnerRole = findViewById(R.id.spinnerRole);
+            spinnerCampus = findViewById(R.id.spinnerCampus);
+            switchAccountStatus = findViewById(R.id.switchAccountStatus);
+
+            btnCancel = findViewById(R.id.btnCancel);
+            btnSave = findViewById(R.id.btnSave);
+
+            progressBar = findViewById(R.id.progressBar);
+            formContainer = findViewById(R.id.formContainer);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            Toast.makeText(this, "Error initializing views", Toast.LENGTH_SHORT).show();
+            finish();
+        }
+    }
+
+    /**
+     * Setup tất cả click listeners
+     */
+    private void setupClickListeners() {
+        // Back button
+        backButton.setOnClickListener(v -> onBackPressed());
+
+        // Birthdate picker
+        etBirthdate.setOnClickListener(v -> showDatePicker());
+
+        // Account status switch
+        switchAccountStatus.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            tvAccountStatus.setText(isChecked ? "Active" : "Inactive");
+            tvAccountStatus.setTextColor(getResources().getColor(
+                    isChecked ? R.color.success_green : android.R.color.holo_red_dark
+            ));
+            hasUnsavedChanges = true;
+        });
+
+        // Cancel button
+        btnCancel.setOnClickListener(v -> {
+            if (hasUnsavedChanges) {
+                showUnsavedChangesDialog();
+            } else {
+                finish();
+            }
+        });
+
+        // Save button - sẽ implement ở subtask tiếp theo
+        btnSave.setOnClickListener(v -> {
+            Toast.makeText(this, "Save functionality coming next", Toast.LENGTH_SHORT).show();
+        });
+
+        // Track changes
+        setupChangeTracking();
+    }
+
+    /**
+     * Track thay đổi trong các EditText
+     */
+    private void setupChangeTracking() {
+        View.OnFocusChangeListener focusListener = (v, hasFocus) -> {
+            if (!hasFocus && !isLoading) {
+                hasUnsavedChanges = true;
+            }
+        };
+
+        etFullName.setOnFocusChangeListener(focusListener);
+        etEmail.setOnFocusChangeListener(focusListener);
+        etStudentId.setOnFocusChangeListener(focusListener);
+        etAddress.setOnFocusChangeListener(focusListener);
+    }
+
+    /**
+     * Load roles và campuses từ Firebase
+     */
+    private void loadFilterData() {
+        DatabaseReference rolesRef = FirebaseDatabase.getInstance().getReference("Role");
+        DatabaseReference campusRef = FirebaseDatabase.getInstance().getReference("Campus");
+
+        // Load roles
+        rolesRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                roleList.clear();
+                roleList.add("Select Role");
+                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                    String role = snapshot.getValue(String.class);
+                    if (role != null && !role.isEmpty()) {
+                        roleList.add(role);
+                    }
+                }
+                setupRoleSpinner();
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                roleList = Arrays.asList("Select Role", "Admin", "Teacher", "Student");
+                setupRoleSpinner();
+            }
+        });
+
+        // Load campuses
+        campusRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                campusList.clear();
+                campusList.add("Select Campus");
+                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                    String campus = snapshot.getValue(String.class);
+                    if (campus != null && !campus.isEmpty()) {
+                        campusList.add(campus);
+                    }
+                }
+                setupCampusSpinner();
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                campusList = Arrays.asList("Select Campus", "FU_Hà Nội", "FU_Hồ Chí Minh",
+                        "FU_Đà Nẵng", "FU_Quy Nhơn", "FU_Cần Thơ");
+                setupCampusSpinner();
+            }
+        });
+    }
+
+    /**
+     * Setup Role spinner
+     */
+    private void setupRoleSpinner() {
+        try {
+            ArrayAdapter<String> adapter = new ArrayAdapter<>(
+                    this, android.R.layout.simple_spinner_item, roleList
+            );
+            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+            spinnerRole.setAdapter(adapter);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Setup Campus spinner
+     */
+    private void setupCampusSpinner() {
+        try {
+            ArrayAdapter<String> adapter = new ArrayAdapter<>(
+                    this, android.R.layout.simple_spinner_item, campusList
+            );
+            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+            spinnerCampus.setAdapter(adapter);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Load user data từ Firebase
+     */
+    private void loadUserData() {
+        isLoading = true;
+        showLoading(true);
+
+        userRepository.getUserByUid(userId, new UserRepository.OnUserLoadedListener() {
+            @Override
+            public void onSuccess(User user) {
+                isLoading = false;
+                showLoading(false);
+                if (user != null) {
+                    currentUser = user;
+                    populateFormFields(user);
+                } else {
+                    showError("User not found");
+                }
+            }
+
+            @Override
+            public void onError(String errorMessage) {
+                isLoading = false;
+                showLoading(false);
+                showError("Failed to load user: " + errorMessage);
+            }
+        });
+    }
+
+    /**
+     * Điền dữ liệu user vào form
+     */
+    private void populateFormFields(User user) {
+        try {
+            // Avatar với initials
+            String initials = getInitials(user.getName());
+            tvUserAvatar.setText(initials);
+
+            // User info
+            tvUserId.setText("ID: " + user.getId());
+            tvCreatedAt.setText("Created: " + formatTimestamp(user.getCreatedAt()));
+
+            // Form fields
+            etFullName.setText(user.getName());
+            etEmail.setText(user.getEmail());
+            etStudentId.setText(user.getStudentId());
+            etBirthdate.setText(user.getBirthdate());
+            etAddress.setText(user.getAddress());
+
+            // Role spinner
+            if (user.getRole() != null) {
+                int rolePosition = roleList.indexOf(user.getRole());
+                if (rolePosition >= 0) {
+                    spinnerRole.setSelection(rolePosition);
+                }
+            }
+
+            // Campus spinner
+            if (user.getCampus() != null) {
+                int campusPosition = campusList.indexOf(user.getCampus());
+                if (campusPosition >= 0) {
+                    spinnerCampus.setSelection(campusPosition);
+                }
+            }
+
+            // Account status
+            boolean isActive = user.isActive();
+            switchAccountStatus.setChecked(isActive);
+            tvAccountStatus.setText(isActive ? "Active" : "Inactive");
+            tvAccountStatus.setTextColor(getResources().getColor(
+                    isActive ? R.color.success_green : android.R.color.holo_red_dark
+            ));
+
+            // Reset flag sau khi load xong
+            hasUnsavedChanges = false;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            showError("Error displaying user data");
+        }
+    }
+
+    /**
+     * Lấy initials từ tên
+     */
+    private String getInitials(String name) {
+        if (name == null || name.isEmpty()) return "U";
+
+        String[] parts = name.trim().split("\\s+");
+        if (parts.length == 1) {
+            return parts[0].substring(0, Math.min(2, parts[0].length())).toUpperCase();
+        } else {
+            return (parts[0].substring(0, 1) + parts[parts.length - 1].substring(0, 1)).toUpperCase();
+        }
+    }
+
+    /**
+     * Format timestamp thành date string
+     */
+    private String formatTimestamp(long timestamp) {
+        if (timestamp == 0) return "Unknown";
+
+        try {
+            SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault());
+            return sdf.format(timestamp);
+        } catch (Exception e) {
+            return "Unknown";
+        }
+    }
+
+    /**
+     * Hiển thị date picker
+     */
+    private void showDatePicker() {
+        Calendar calendar = Calendar.getInstance();
+
+        // Parse current date nếu có
+        String currentDate = etBirthdate.getText().toString();
+        if (!currentDate.isEmpty()) {
+            try {
+                String[] parts = currentDate.split("/");
+                if (parts.length == 3) {
+                    calendar.set(Integer.parseInt(parts[2]),
+                            Integer.parseInt(parts[1]) - 1,
+                            Integer.parseInt(parts[0]));
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        DatePickerDialog datePickerDialog = new DatePickerDialog(
+                this,
+                (view, year, month, dayOfMonth) -> {
+                    String date = String.format(Locale.getDefault(), "%02d/%02d/%d",
+                            dayOfMonth, month + 1, year);
+                    etBirthdate.setText(date);
+                    hasUnsavedChanges = true;
+                },
+                calendar.get(Calendar.YEAR),
+                calendar.get(Calendar.MONTH),
+                calendar.get(Calendar.DAY_OF_MONTH)
+        );
+
+        datePickerDialog.show();
+    }
+
+    /**
+     * Hiển thị/ẩn loading
+     */
+    private void showLoading(boolean show) {
+        progressBar.setVisibility(show ? View.VISIBLE : View.GONE);
+        formContainer.setVisibility(show ? View.GONE : View.VISIBLE);
+        tvError.setVisibility(View.GONE);
+    }
+
+    /**
+     * Hiển thị error message
+     */
+    private void showError(String message) {
+        tvError.setText(message);
+        tvError.setVisibility(View.VISIBLE);
+        formContainer.setVisibility(View.GONE);
+        progressBar.setVisibility(View.GONE);
+    }
+
+    /**
+     * Dialog xác nhận khi có unsaved changes
+     */
+    private void showUnsavedChangesDialog() {
+        new AlertDialog.Builder(this)
+                .setTitle("Unsaved Changes")
+                .setMessage("You have unsaved changes. Discard them?")
+                .setPositiveButton("Discard", (dialog, which) -> finish())
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (hasUnsavedChanges) {
+            showUnsavedChangesDialog();
+        } else {
+            super.onBackPressed();
+        }
+    }
+}
