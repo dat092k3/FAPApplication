@@ -81,6 +81,21 @@ public class UserRepository {
     }
 
     /**
+     * Interface for callback when updating a user (alias for OnUserOperationListener)
+     */
+    public interface OnUserUpdateListener {
+        /**
+         * Called when update is successful
+         */
+        void onSuccess();
+
+        /**
+         * Called when an error occurs
+         */
+        void onError(String errorMessage);
+    }
+
+    /**
      * Lấy tất cả các user từ Firebase
      *
      * @param listener Callback để nhận kết quả

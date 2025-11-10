@@ -160,10 +160,10 @@ public class AccountDetailActivity extends AppCompatActivity {
             }
         });
 
-        // Save button - validate trước khi save
+        // Save button - validate và save
         btnSave.setOnClickListener(v -> {
             if (validateAllFields()) {
-                Toast.makeText(this, "Save functionality coming next", Toast.LENGTH_SHORT).show();
+                saveUserData();
             }
         });
 
@@ -772,6 +772,180 @@ public class AccountDetailActivity extends AppCompatActivity {
                 .setPositiveButton("Discard", (dialog, which) -> finish())
                 .setNegativeButton("Cancel", null)
                 .show();
+    }
+
+    /**
+     * Lưu thông tin user vào Firebase
+     */
+    private void saveUserData() {
+        // Hiển thị loading
+        showSaveLoading(true);
+
+        // Tạo User object từ form data
+        User updatedUser = collectFormData();
+
+        // Kiểm tra xem email có thay đổi không
+        boolean emailChanged = !updatedUser.getEmail().equals(currentUser.getEmail());
+
+        if (emailChanged) {
+            // Nếu email thay đổi, cần update cả Firebase Auth
+            showEmailChangeConfirmation(updatedUser);
+        } else {
+            // Chỉ update Realtime Database
+            updateUserInDatabase(updatedUser);
+        }
+    }
+
+    /**
+     * Thu thập dữ liệu từ form vào User object
+     */
+    private User collectFormData() {
+        User user = new User();
+        user.setId(userId);
+        user.setUid(userId);
+        user.setName(etFullName.getText().toString().trim());
+        user.setFullName(etFullName.getText().toString().trim());
+        user.setEmail(etEmail.getText().toString().trim());
+        user.setRole(spinnerRole.getSelectedItem().toString());
+        user.setCampus(spinnerCampus.getSelectedItem().toString());
+        user.setStudentId(etStudentId.getText().toString().trim());
+        user.setBirthdate(etBirthdate.getText().toString().trim());
+        user.setAddress(etAddress.getText().toString().trim());
+        user.setIsActive(switchAccountStatus.isChecked());
+        user.setCreatedAt(currentUser.getCreatedAt()); // Giữ nguyên createdAt
+
+        return user;
+    }
+
+    /**
+     * Update user vào Firebase Realtime Database
+     */
+    private void updateUserInDatabase(User updatedUser) {
+        userRepository.updateUser(updatedUser, new UserRepository.OnUserOperationListener() {
+            @Override
+            public void onSuccess() {
+                showSaveLoading(false);
+                currentUser = updatedUser;
+                hasUnsavedChanges = false;
+                showSuccessDialog();
+            }
+
+            @Override
+            public void onError(String errorMessage) {
+                showSaveLoading(false);
+                showSaveError("Failed to save: " + errorMessage);
+            }
+        });
+    }
+
+    /**
+     * Hiển thị dialog xác nhận thay đổi email
+     */
+    private void showEmailChangeConfirmation(User updatedUser) {
+        showSaveLoading(false);
+
+        new AlertDialog.Builder(this)
+                .setTitle("Change Email Address")
+                .setMessage("Changing email address will also update your login credentials. " +
+                        "You will need to use the new email for future logins.\n\n" +
+                        "Are you sure you want to continue?")
+                .setPositiveButton("Yes, Change Email", (dialog, which) -> {
+                    showSaveLoading(true);
+                    updateEmailAndDatabase(updatedUser);
+                })
+                .setNegativeButton("Cancel", (dialog, which) -> {
+                    // User cancelled, do nothing
+                })
+                .setCancelable(false)
+                .show();
+    }
+
+    /**
+     * Update cả email trong Firebase Auth và Realtime Database
+     */
+    private void updateEmailAndDatabase(User updatedUser) {
+        String newEmail = updatedUser.getEmail();
+
+        // Lấy current Firebase user
+        com.google.firebase.auth.FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+
+        if (firebaseUser == null) {
+            showSaveLoading(false);
+            showSaveError("Authentication error. Please login again.");
+            return;
+        }
+
+        // Update email trong Firebase Auth trước
+        firebaseUser.updateEmail(newEmail)
+                .addOnSuccessListener(aVoid -> {
+                    // Email updated thành công trong Auth, giờ update Database
+                    updateUserInDatabase(updatedUser);
+                })
+                .addOnFailureListener(e -> {
+                    showSaveLoading(false);
+                    String errorMessage = "Failed to update email: ";
+
+                    // Parse error message
+                    if (e.getMessage() != null) {
+                        if (e.getMessage().contains("requires-recent-login")) {
+                            errorMessage += "Please logout and login again before changing email.";
+                        } else if (e.getMessage().contains("email-already-in-use")) {
+                            errorMessage += "This email is already in use by another account.";
+                        } else if (e.getMessage().contains("invalid-email")) {
+                            errorMessage += "Invalid email format.";
+                        } else {
+                            errorMessage += e.getMessage();
+                        }
+                    } else {
+                        errorMessage += "Unknown error occurred.";
+                    }
+
+                    showSaveError(errorMessage);
+                });
+    }
+
+    /**
+     * Hiển thị dialog thành công
+     */
+    private void showSuccessDialog() {
+        new AlertDialog.Builder(this)
+                .setTitle("Success")
+                .setMessage("User information has been updated successfully!")
+                .setPositiveButton("OK", (dialog, which) -> {
+                    // Return result to previous activity
+                    setResult(RESULT_OK);
+                    finish();
+                })
+                .setCancelable(false)
+                .show();
+    }
+
+    /**
+     * Hiển thị error khi save
+     */
+    private void showSaveError(String message) {
+        new AlertDialog.Builder(this)
+                .setTitle("Error")
+                .setMessage(message)
+                .setPositiveButton("OK", null)
+                .show();
+    }
+
+    /**
+     * Hiển thị/ẩn loading khi save
+     */
+    private void showSaveLoading(boolean show) {
+        if (show) {
+            btnSave.setEnabled(false);
+            btnCancel.setEnabled(false);
+            btnSave.setText("Saving...");
+            progressBar.setVisibility(View.VISIBLE);
+        } else {
+            btnSave.setEnabled(true);
+            btnCancel.setEnabled(true);
+            btnSave.setText("Save Changes");
+            progressBar.setVisibility(View.GONE);
+        }
     }
 
     @Override
