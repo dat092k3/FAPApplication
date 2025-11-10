@@ -2,7 +2,11 @@ package com.example.fapapplication;
 
 import android.app.DatePickerDialog;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.util.Patterns;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -26,6 +30,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -60,6 +65,7 @@ public class AccountDetailActivity extends AppCompatActivity {
     // Flags
     private boolean isLoading = false;
     private boolean hasUnsavedChanges = false;
+    private boolean isValidatingForm = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -85,6 +91,7 @@ public class AccountDetailActivity extends AppCompatActivity {
         userRepository = new UserRepository();
         initializeViews();
         setupClickListeners();
+        setupValidationListeners();
         loadFilterData();
         loadUserData();
     }
@@ -153,9 +160,11 @@ public class AccountDetailActivity extends AppCompatActivity {
             }
         });
 
-        // Save button - sẽ implement ở subtask tiếp theo
+        // Save button - validate trước khi save
         btnSave.setOnClickListener(v -> {
-            Toast.makeText(this, "Save functionality coming next", Toast.LENGTH_SHORT).show();
+            if (validateAllFields()) {
+                Toast.makeText(this, "Save functionality coming next", Toast.LENGTH_SHORT).show();
+            }
         });
 
         // Track changes
@@ -177,6 +186,330 @@ public class AccountDetailActivity extends AppCompatActivity {
         etStudentId.setOnFocusChangeListener(focusListener);
         etAddress.setOnFocusChangeListener(focusListener);
     }
+
+    /**
+     * Setup validation listeners để clear errors khi user nhập liệu
+     */
+    private void setupValidationListeners() {
+        // Clear error khi user bắt đầu nhập
+        etFullName.addTextChangedListener(new ValidationTextWatcher(etFullName));
+        etEmail.addTextChangedListener(new ValidationTextWatcher(etEmail));
+        etStudentId.addTextChangedListener(new ValidationTextWatcher(etStudentId));
+        etBirthdate.addTextChangedListener(new ValidationTextWatcher(etBirthdate));
+
+        // Clear error khi chọn spinner
+        spinnerRole.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                if (!isLoading) {
+                    clearSpinnerError();
+                    hasUnsavedChanges = true;
+                }
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {}
+        });
+
+        spinnerCampus.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                if (!isLoading) {
+                    clearSpinnerError();
+                    hasUnsavedChanges = true;
+                }
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {}
+        });
+    }
+
+    /**
+     * TextWatcher để clear error khi user nhập
+     */
+    private class ValidationTextWatcher implements TextWatcher {
+        private EditText editText;
+
+        public ValidationTextWatcher(EditText editText) {
+            this.editText = editText;
+        }
+
+        @Override
+        public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+        @Override
+        public void onTextChanged(CharSequence s, int start, int before, int count) {
+            if (!isLoading && !isValidatingForm) {
+                clearFieldError(editText);
+            }
+        }
+
+        @Override
+        public void afterTextChanged(Editable s) {}
+    }
+
+    // ==================== VALIDATION METHODS ====================
+
+    /**
+     * Validate toàn bộ form trước khi save
+     */
+    private boolean validateAllFields() {
+        isValidatingForm = true;
+        boolean isValid = true;
+
+        // Clear tất cả errors trước
+        clearAllErrors();
+
+        // Validate từng field
+        if (!validateFullName()) isValid = false;
+        if (!validateEmail()) isValid = false;
+        if (!validateRole()) isValid = false;
+        if (!validateCampus()) isValid = false;
+        if (!validateStudentId()) isValid = false;
+        if (!validateBirthdate()) isValid = false;
+
+        isValidatingForm = false;
+
+        // Hiển thị message nếu có lỗi
+        if (!isValid) {
+            Toast.makeText(this, "Please fix all errors before saving", Toast.LENGTH_LONG).show();
+            // Focus vào field đầu tiên có lỗi
+            focusFirstError();
+        }
+
+        return isValid;
+    }
+
+    /**
+     * Validate Full Name
+     */
+    private boolean validateFullName() {
+        String fullName = etFullName.getText().toString().trim();
+
+        if (fullName.isEmpty()) {
+            showFieldError(etFullName, "Full name is required");
+            return false;
+        }
+
+        if (fullName.length() < 2) {
+            showFieldError(etFullName, "Full name must be at least 2 characters");
+            return false;
+        }
+
+        if (fullName.length() > 100) {
+            showFieldError(etFullName, "Full name is too long (max 100 characters)");
+            return false;
+        }
+
+        // Kiểm tra có chứa số không
+        if (fullName.matches(".*\\d.*")) {
+            showFieldError(etFullName, "Full name cannot contain numbers");
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Validate Email
+     */
+    private boolean validateEmail() {
+        String email = etEmail.getText().toString().trim();
+
+        if (email.isEmpty()) {
+            showFieldError(etEmail, "Email is required");
+            return false;
+        }
+
+        if (!isValidEmail(email)) {
+            showFieldError(etEmail, "Please enter a valid email address");
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Validate Role
+     */
+    private boolean validateRole() {
+        String selectedRole = spinnerRole.getSelectedItem().toString();
+
+        if (selectedRole.equals("Select Role")) {
+            showSpinnerError("Please select a role");
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Validate Campus
+     */
+    private boolean validateCampus() {
+        String selectedCampus = spinnerCampus.getSelectedItem().toString();
+
+        if (selectedCampus.equals("Select Campus")) {
+            showSpinnerError("Please select a campus");
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Validate Student ID (bắt buộc cho Student/Teacher)
+     */
+    private boolean validateStudentId() {
+        String selectedRole = spinnerRole.getSelectedItem().toString();
+        String studentId = etStudentId.getText().toString().trim();
+
+        // Chỉ bắt buộc với Student và Teacher
+        if ((selectedRole.equals("Student") || selectedRole.equals("Teacher")) && studentId.isEmpty()) {
+            showFieldError(etStudentId, selectedRole + " ID is required");
+            return false;
+        }
+
+        // Nếu có nhập, kiểm tra format
+        if (!studentId.isEmpty() && studentId.length() < 3) {
+            showFieldError(etStudentId, "ID must be at least 3 characters");
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Validate Birthdate (optional nhưng nếu có thì phải đúng format)
+     */
+    private boolean validateBirthdate() {
+        String birthdate = etBirthdate.getText().toString().trim();
+
+        // Optional field
+        if (birthdate.isEmpty()) {
+            return true;
+        }
+
+        // Kiểm tra format DD/MM/YYYY
+        if (!isValidDateFormat(birthdate)) {
+            showFieldError(etBirthdate, "Invalid date format (DD/MM/YYYY)");
+            return false;
+        }
+
+        // Kiểm tra tuổi hợp lệ (10-100 tuổi)
+        if (!isValidAge(birthdate)) {
+            showFieldError(etBirthdate, "Age must be between 10 and 100 years");
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Kiểm tra email format
+     */
+    private boolean isValidEmail(String email) {
+        return Patterns.EMAIL_ADDRESS.matcher(email).matches();
+    }
+
+    /**
+     * Kiểm tra date format DD/MM/YYYY
+     */
+    private boolean isValidDateFormat(String date) {
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
+        sdf.setLenient(false);
+        try {
+            sdf.parse(date);
+            return true;
+        } catch (ParseException e) {
+            return false;
+        }
+    }
+
+    /**
+     * Kiểm tra tuổi hợp lệ (10-100)
+     */
+    private boolean isValidAge(String birthdate) {
+        try {
+            SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
+            Calendar birthCal = Calendar.getInstance();
+            birthCal.setTime(sdf.parse(birthdate));
+
+            Calendar today = Calendar.getInstance();
+            int age = today.get(Calendar.YEAR) - birthCal.get(Calendar.YEAR);
+
+            if (today.get(Calendar.MONTH) < birthCal.get(Calendar.MONTH) ||
+                    (today.get(Calendar.MONTH) == birthCal.get(Calendar.MONTH) &&
+                            today.get(Calendar.DAY_OF_MONTH) < birthCal.get(Calendar.DAY_OF_MONTH))) {
+                age--;
+            }
+
+            return age >= 10 && age <= 100;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    // ==================== ERROR HANDLING METHODS ====================
+
+    /**
+     * Hiển thị error cho EditText
+     */
+    private void showFieldError(EditText field, String error) {
+        field.setError(error);
+        field.requestFocus();
+    }
+
+    /**
+     * Clear error cho EditText
+     */
+    private void clearFieldError(EditText field) {
+        field.setError(null);
+    }
+
+    /**
+     * Hiển thị error cho Spinner (dùng Toast)
+     */
+    private void showSpinnerError(String message) {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+    }
+
+    /**
+     * Clear spinner error
+     */
+    private void clearSpinnerError() {
+        // Spinner không có setError, chỉ cần clear toast
+    }
+
+    /**
+     * Clear tất cả errors
+     */
+    private void clearAllErrors() {
+        clearFieldError(etFullName);
+        clearFieldError(etEmail);
+        clearFieldError(etStudentId);
+        clearFieldError(etBirthdate);
+        clearFieldError(etAddress);
+        tvError.setVisibility(View.GONE);
+    }
+
+    /**
+     * Focus vào field đầu tiên có lỗi
+     */
+    private void focusFirstError() {
+        if (etFullName.getError() != null) {
+            etFullName.requestFocus();
+        } else if (etEmail.getError() != null) {
+            etEmail.requestFocus();
+        } else if (etStudentId.getError() != null) {
+            etStudentId.requestFocus();
+        } else if (etBirthdate.getError() != null) {
+            etBirthdate.requestFocus();
+        }
+    }
+
+    // ==================== DATA LOADING METHODS ====================
 
     /**
      * Load roles và campuses từ Firebase
@@ -342,6 +675,8 @@ public class AccountDetailActivity extends AppCompatActivity {
             showError("Error displaying user data");
         }
     }
+
+    // ==================== HELPER METHODS ====================
 
     /**
      * Lấy initials từ tên
