@@ -74,6 +74,8 @@ public class AccountListActivity extends AppCompatActivity {
     private String currentRoleFilter = "All Roles";
     private String currentCampusFilter = "All Campuses";
 
+    private static final int REQUEST_CODE_ACCOUNT_DETAIL = 1001;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -108,6 +110,17 @@ public class AccountListActivity extends AppCompatActivity {
         loadUsersFromFirebase();
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == REQUEST_CODE_ACCOUNT_DETAIL && resultCode == RESULT_OK) {
+            // Account was updated, refresh the list
+            Toast.makeText(this, "Account updated successfully", Toast.LENGTH_SHORT).show();
+            refreshData();
+        }
+    }
+
     /**
      * Khởi tạo tất cả các views
      */
@@ -136,10 +149,9 @@ public class AccountListActivity extends AppCompatActivity {
 
         // Thiết lập click listener cho items
         adapter.setOnAccountClickListener((user, position) -> {
-            // Navigate to AccountDetailActivity
             Intent intent = new Intent(AccountListActivity.this, AccountDetailActivity.class);
             intent.putExtra("USER_ID", user.getId());
-            startActivity(intent);
+            startActivityForResult(intent, REQUEST_CODE_ACCOUNT_DETAIL);
         });
     }
 

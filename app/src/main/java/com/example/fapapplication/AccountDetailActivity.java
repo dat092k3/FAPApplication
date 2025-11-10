@@ -142,13 +142,22 @@ public class AccountDetailActivity extends AppCompatActivity {
         // Birthdate picker
         etBirthdate.setOnClickListener(v -> showDatePicker());
 
-        // Account status switch
+        // Account status switch - với confirmation cho deactivation
         switchAccountStatus.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            tvAccountStatus.setText(isChecked ? "Active" : "Inactive");
-            tvAccountStatus.setTextColor(getResources().getColor(
-                    isChecked ? R.color.success_green : android.R.color.holo_red_dark
-            ));
-            hasUnsavedChanges = true;
+            // Nếu đang loading, bỏ qua
+            if (isLoading) {
+                return;
+            }
+
+            // Nếu user đang tắt account, hiển thị confirmation dialog
+            if (!isChecked && currentUser != null && currentUser.isActive()) {
+                // User đang cố gắng deactivate account, hiển thị warning
+                showDeactivationConfirmation();
+            } else {
+                // Activation hoặc không có thay đổi
+                updateAccountStatusUI(isChecked);
+                hasUnsavedChanges = true;
+            }
         });
 
         // Cancel button
@@ -912,7 +921,7 @@ public class AccountDetailActivity extends AppCompatActivity {
                 .setTitle("Success")
                 .setMessage("User information has been updated successfully!")
                 .setPositiveButton("OK", (dialog, which) -> {
-                    // Return result to previous activity
+                    // Pass result back với flag để refresh list
                     setResult(RESULT_OK);
                     finish();
                 })
@@ -946,6 +955,40 @@ public class AccountDetailActivity extends AppCompatActivity {
             btnSave.setText("Save Changes");
             progressBar.setVisibility(View.GONE);
         }
+    }
+
+
+    /**
+     * Update UI khi account status thay đổi
+     */
+    private void updateAccountStatusUI(boolean isActive) {
+        tvAccountStatus.setText(isActive ? "Active" : "Inactive");
+        tvAccountStatus.setTextColor(getResources().getColor(
+                isActive ? R.color.success_green : android.R.color.holo_red_dark
+        ));
+    }
+
+    /**
+     * Hiển thị dialog xác nhận khi deactivate account
+     */
+    private void showDeactivationConfirmation() {
+        new AlertDialog.Builder(this)
+                .setTitle("Deactivate Account")
+                .setMessage("Are you sure you want to deactivate this account?\n\n" +
+                        "Deactivated accounts will not be able to log in until reactivated.")
+                .setIcon(android.R.drawable.ic_dialog_alert)
+                .setPositiveButton("Deactivate", (dialog, which) -> {
+                    // User confirmed deactivation
+                    switchAccountStatus.setChecked(false);
+                    updateAccountStatusUI(false);
+                    hasUnsavedChanges = true;
+                })
+                .setNegativeButton("Cancel", (dialog, which) -> {
+                    // User cancelled, revert switch
+                    switchAccountStatus.setChecked(true);
+                })
+                .setCancelable(false)
+                .show();
     }
 
     @Override
