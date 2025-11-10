@@ -40,9 +40,6 @@
           android:name=".LoginFeidPage" />
         <activity
           android:exported="true"
-          android:name=".HomePage" />
-        <activity
-          android:exported="true"
           android:name=".LoginPage">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
