@@ -28,6 +28,9 @@
             android:exported="false" />
         <activity
             android:name=".HomePage"
+            android:exported="false" />
+        <activity
+            android:name=".activity.CheckAttendanceActivity"
             android:exported="true" />
         <activity
             android:name=".LoginPage"

@@ -1,12 +1,12 @@
-package com.example.project.activity;
+package com.example.fapapplication.activity;
 
 import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import com.example.project.R;
-import com.example.project.adapter.CurriculumAdapter;
-import com.example.project.model.Curriculum;
+import com.example.fapapplication.R;
+import com.example.fapapplication.adapter.CurriculumAdapter;
+import com.example.fapapplication.model.Curriculum;
 
 import java.util.ArrayList;
 

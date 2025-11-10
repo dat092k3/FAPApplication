@@ -1,4 +1,4 @@
-package com.example.project.activity;
+package com.example.fapapplication.activity;
 
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -14,10 +14,10 @@ import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.project.R;
-import com.example.project.adapter.AttendanceHistoryAdapter;
-import com.example.project.model.Attendance;
-import com.example.project.model.AttendanceHistoryItem;
+import com.example.fapapplication.R;
+import com.example.fapapplication.adapter.AttendanceHistoryAdapter;
+import com.example.fapapplication.model.Attendance;
+import com.example.fapapplication.model.AttendanceHistoryItem;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
