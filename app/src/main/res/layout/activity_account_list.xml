@@ -47,12 +47,59 @@
     android:background="@drawable/edit_text_background"
     android:drawableStart="@drawable/ic_search"
     android:drawablePadding="8dp"
-    android:hint="Search accounts..."
+    android:hint="Search by name, email..."
     android:padding="12dp"
     android:textSize="16sp"
     app:layout_constraintEnd_toEndOf="parent"
     app:layout_constraintStart_toStartOf="parent"
     app:layout_constraintTop_toBottomOf="@id/headerLayout" />
+
+  <!-- Filter controls container -->
+  <LinearLayout
+    android:id="@+id/filterContainer"
+    android:layout_width="0dp"
+    android:layout_height="wrap_content"
+    android:layout_marginStart="16dp"
+    android:layout_marginEnd="16dp"
+    android:layout_marginBottom="8dp"
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
+    app:layout_constraintEnd_toEndOf="parent"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintTop_toBottomOf="@id/searchEditText">
+
+    <!-- Role Filter Spinner -->
+    <Spinner
+      android:id="@+id/spinnerRoleFilter"
+      android:layout_width="0dp"
+      android:layout_height="48dp"
+      android:layout_weight="1"
+      android:background="@drawable/edit_text_background"
+      android:padding="8dp"
+      android:spinnerMode="dropdown" />
+
+    <!-- Campus Filter Spinner -->
+    <Spinner
+      android:id="@+id/spinnerCampusFilter"
+      android:layout_width="0dp"
+      android:layout_height="48dp"
+      android:layout_weight="1"
+      android:layout_marginStart="8dp"
+      android:background="@drawable/edit_text_background"
+      android:padding="8dp"
+      android:spinnerMode="dropdown" />
+
+    <!-- Clear Filters Button -->
+    <ImageButton
+      android:id="@+id/btnClearFilters"
+      android:layout_width="48dp"
+      android:layout_height="48dp"
+      android:layout_marginStart="8dp"
+      android:background="@drawable/edit_text_background"
+      android:contentDescription="Clear Filters"
+      android:src="@android:drawable/ic_menu_close_clear_cancel"
+      android:tint="#23437B" />
+  </LinearLayout>
 
   <!-- SwipeRefreshLayout bọc RecyclerView -->
   <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
@@ -63,7 +110,7 @@
     app:layout_constraintBottom_toBottomOf="parent"
     app:layout_constraintEnd_toEndOf="parent"
     app:layout_constraintStart_toStartOf="parent"
-    app:layout_constraintTop_toBottomOf="@id/searchEditText">
+    app:layout_constraintTop_toBottomOf="@id/filterContainer">
 
     <!-- RecyclerView để hiển thị danh sách accounts -->
     <androidx.recyclerview.widget.RecyclerView
@@ -85,7 +132,7 @@
     app:layout_constraintBottom_toBottomOf="parent"
     app:layout_constraintEnd_toEndOf="parent"
     app:layout_constraintStart_toStartOf="parent"
-    app:layout_constraintTop_toBottomOf="@id/searchEditText" />
+    app:layout_constraintTop_toBottomOf="@id/filterContainer" />
 
   <!-- Empty state message -->
   <TextView
@@ -95,11 +142,12 @@
     android:text="No accounts found"
     android:textColor="#666666"
     android:textSize="16sp"
+    android:gravity="center"
     android:visibility="gone"
     app:layout_constraintBottom_toBottomOf="parent"
     app:layout_constraintEnd_toEndOf="parent"
     app:layout_constraintStart_toStartOf="parent"
-    app:layout_constraintTop_toBottomOf="@id/searchEditText" />
+    app:layout_constraintTop_toBottomOf="@id/filterContainer" />
 
   <!-- FAB để thêm account mới -->
   <com.google.android.material.floatingactionbutton.FloatingActionButton

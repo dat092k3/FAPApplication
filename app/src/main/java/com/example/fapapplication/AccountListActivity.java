@@ -5,9 +5,12 @@ import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ProgressBar;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -27,7 +30,10 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Activity hiển thị danh sách tất cả user accounts trong hệ thống.
@@ -35,7 +41,10 @@ import java.util.List;
  *
  * Features:
  * - Realtime data synchronization với Firebase
- * - Search và filter
+ * - Text search (name, email)
+ * - Filter by role (Admin, Teacher, Student)
+ * - Filter by campus
+ * - Combined filtering
  * - Swipe to refresh
  * - Error handling và retry mechanism
  */
@@ -46,6 +55,9 @@ public class AccountListActivity extends AppCompatActivity {
     private ProgressBar progressBar;
     private TextView emptyTextView;
     private EditText searchEditText;
+    private Spinner spinnerRoleFilter;
+    private Spinner spinnerCampusFilter;
+    private ImageButton btnClearFilters;
     private FloatingActionButton fabAddAccount;
     private ImageButton backButton;
     private SwipeRefreshLayout swipeRefreshLayout;
@@ -53,7 +65,14 @@ public class AccountListActivity extends AppCompatActivity {
     private List<User> allUsers;
     private FirebaseAuth auth;
     private DatabaseReference usersRef;
+    private DatabaseReference rolesRef;
+    private DatabaseReference campusRef;
     private ValueEventListener usersListener;
+
+    // Filter state
+    private String currentSearchQuery = "";
+    private String currentRoleFilter = "All Roles";
+    private String currentCampusFilter = "All Campuses";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,14 +87,19 @@ public class AccountListActivity extends AppCompatActivity {
             return;
         }
 
-        // Khởi tạo Firebase reference
+        // Khởi tạo Firebase references
         usersRef = FirebaseDatabase.getInstance().getReference("Users");
+        rolesRef = FirebaseDatabase.getInstance().getReference("Role");
+        campusRef = FirebaseDatabase.getInstance().getReference("Campus");
 
         // Khởi tạo views
         initializeViews();
 
         // Thiết lập RecyclerView
         setupRecyclerView();
+
+        // Load filter options từ Firebase
+        loadFilterOptions();
 
         // Thiết lập listeners
         setupListeners();
@@ -92,6 +116,9 @@ public class AccountListActivity extends AppCompatActivity {
         progressBar = findViewById(R.id.progressBar);
         emptyTextView = findViewById(R.id.emptyTextView);
         searchEditText = findViewById(R.id.searchEditText);
+        spinnerRoleFilter = findViewById(R.id.spinnerRoleFilter);
+        spinnerCampusFilter = findViewById(R.id.spinnerCampusFilter);
+        btnClearFilters = findViewById(R.id.btnClearFilters);
         fabAddAccount = findViewById(R.id.fabAddAccount);
         backButton = findViewById(R.id.backButton);
         swipeRefreshLayout = findViewById(R.id.swipeRefreshLayout);
@@ -115,7 +142,95 @@ public class AccountListActivity extends AppCompatActivity {
     }
 
     /**
-     * Thiết lập các listeners cho buttons, search và swipe refresh
+     * Load danh sách roles và campuses từ Firebase cho filter dropdowns
+     */
+    private void loadFilterOptions() {
+        // Load roles từ Firebase
+        rolesRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                List<String> roles = new ArrayList<>();
+                roles.add("All Roles"); // Default option
+
+                for (DataSnapshot roleSnapshot : dataSnapshot.getChildren()) {
+                    String role = roleSnapshot.getValue(String.class);
+                    if (role != null && !role.isEmpty()) {
+                        roles.add(role);
+                    }
+                }
+
+                // Thiết lập adapter cho role spinner
+                ArrayAdapter<String> roleAdapter = new ArrayAdapter<>(
+                        AccountListActivity.this,
+                        android.R.layout.simple_spinner_item,
+                        roles
+                );
+                roleAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                spinnerRoleFilter.setAdapter(roleAdapter);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                // Nếu lỗi, dùng default roles
+                List<String> defaultRoles = Arrays.asList("All Roles", "Admin", "Teacher", "Student");
+                ArrayAdapter<String> roleAdapter = new ArrayAdapter<>(
+                        AccountListActivity.this,
+                        android.R.layout.simple_spinner_item,
+                        defaultRoles
+                );
+                roleAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                spinnerRoleFilter.setAdapter(roleAdapter);
+            }
+        });
+
+        // Load campuses từ Firebase
+        campusRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                List<String> campuses = new ArrayList<>();
+                campuses.add("All Campuses"); // Default option
+
+                for (DataSnapshot campusSnapshot : dataSnapshot.getChildren()) {
+                    String campus = campusSnapshot.getValue(String.class);
+                    if (campus != null && !campus.isEmpty()) {
+                        campuses.add(campus);
+                    }
+                }
+
+                // Thiết lập adapter cho campus spinner
+                ArrayAdapter<String> campusAdapter = new ArrayAdapter<>(
+                        AccountListActivity.this,
+                        android.R.layout.simple_spinner_item,
+                        campuses
+                );
+                campusAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                spinnerCampusFilter.setAdapter(campusAdapter);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                // Nếu lỗi, dùng default campuses
+                List<String> defaultCampuses = Arrays.asList(
+                        "All Campuses",
+                        "FU_Hà Nội",
+                        "FU_Hồ Chí Minh",
+                        "FU_Đà Nẵng",
+                        "FU_Quy Nhơn",
+                        "FU_Cần Thơ"
+                );
+                ArrayAdapter<String> campusAdapter = new ArrayAdapter<>(
+                        AccountListActivity.this,
+                        android.R.layout.simple_spinner_item,
+                        defaultCampuses
+                );
+                campusAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                spinnerCampusFilter.setAdapter(campusAdapter);
+            }
+        });
+    }
+
+    /**
+     * Thiết lập các listeners cho buttons, search và filters
      */
     private void setupListeners() {
         // Back button
@@ -135,13 +250,43 @@ public class AccountListActivity extends AppCompatActivity {
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                filterUsers(s.toString());
+                currentSearchQuery = s.toString();
+                applyAllFilters();
             }
 
             @Override
             public void afterTextChanged(Editable s) {
             }
         });
+
+        // Role filter listener
+        spinnerRoleFilter.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                currentRoleFilter = parent.getItemAtPosition(position).toString();
+                applyAllFilters();
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+            }
+        });
+
+        // Campus filter listener
+        spinnerCampusFilter.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                currentCampusFilter = parent.getItemAtPosition(position).toString();
+                applyAllFilters();
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+            }
+        });
+
+        // Clear filters button
+        btnClearFilters.setOnClickListener(v -> clearAllFilters());
 
         // Swipe to refresh listener
         swipeRefreshLayout.setOnRefreshListener(this::refreshData);
@@ -152,6 +297,28 @@ public class AccountListActivity extends AppCompatActivity {
                 getResources().getColor(android.R.color.holo_orange_dark),
                 getResources().getColor(android.R.color.holo_green_dark)
         );
+    }
+
+    /**
+     * Clear tất cả filters và reset về trạng thái ban đầu
+     */
+    private void clearAllFilters() {
+        // Reset search
+        searchEditText.setText("");
+
+        // Reset spinners về "All"
+        spinnerRoleFilter.setSelection(0);
+        spinnerCampusFilter.setSelection(0);
+
+        // Reset filter state
+        currentSearchQuery = "";
+        currentRoleFilter = "All Roles";
+        currentCampusFilter = "All Campuses";
+
+        // Apply filters (sẽ hiển thị tất cả users)
+        applyAllFilters();
+
+        Toast.makeText(this, "Filters cleared", Toast.LENGTH_SHORT).show();
     }
 
     /**
@@ -194,12 +361,10 @@ public class AccountListActivity extends AppCompatActivity {
                     }
                 }
 
-                // Cập nhật UI
-                updateUI();
-
-                // Tắt loading và refresh indicators
+                // Cập nhật UI với filters hiện tại
                 progressBar.setVisibility(View.GONE);
                 swipeRefreshLayout.setRefreshing(false);
+                applyAllFilters();
             }
 
             @Override
@@ -221,11 +386,7 @@ public class AccountListActivity extends AppCompatActivity {
      * Method này được gọi khi user swipe down
      */
     private void refreshData() {
-        // Clear search để hiển thị tất cả data
-        searchEditText.setText("");
-
-        // Vì đang dùng ValueEventListener (realtime), data sẽ tự động update
-        // Nên chỉ cần force một lần fetch bằng cách dùng single value event
+        // Force một lần fetch bằng cách dùng single value event
         usersRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
@@ -251,8 +412,8 @@ public class AccountListActivity extends AppCompatActivity {
                     }
                 }
 
-                // Cập nhật UI
-                updateUI();
+                // Cập nhật UI với filters hiện tại
+                applyAllFilters();
 
                 // TẮT refresh indicator
                 swipeRefreshLayout.setRefreshing(false);
@@ -268,88 +429,117 @@ public class AccountListActivity extends AppCompatActivity {
     }
 
     /**
-     * Cập nhật UI dựa trên data hiện tại
+     * Áp dụng tất cả filters (search + role + campus) lên danh sách users
+     * Method này được gọi mỗi khi có thay đổi trong search hoặc filters
      */
-    private void updateUI() {
-        if (allUsers.isEmpty()) {
-            emptyTextView.setVisibility(View.VISIBLE);
-            emptyTextView.setText("No accounts found");
-            recyclerView.setVisibility(View.GONE);
-        } else {
-            emptyTextView.setVisibility(View.GONE);
-            recyclerView.setVisibility(View.VISIBLE);
-
-            // Apply current search filter nếu có
-            String currentSearch = searchEditText.getText().toString();
-            if (!currentSearch.isEmpty()) {
-                filterUsers(currentSearch);
-            } else {
-                adapter.updateUsers(allUsers);
-            }
-        }
-    }
-
-    /**
-     * Lọc danh sách users theo search query
-     * Search trong name, email, role và campus
-     */
-    private void filterUsers(String query) {
-        if (query.isEmpty()) {
-            adapter.updateUsers(allUsers);
-            updateEmptyState(allUsers.isEmpty());
-            return;
-        }
-
+    private void applyAllFilters() {
         List<User> filteredList = new ArrayList<>();
-        String lowerQuery = query.toLowerCase().trim();
 
         for (User user : allUsers) {
-            boolean matchFound = false;
+            boolean matchesSearch = matchesSearchQuery(user, currentSearchQuery);
+            boolean matchesRole = matchesRoleFilter(user, currentRoleFilter);
+            boolean matchesCampus = matchesCampusFilter(user, currentCampusFilter);
 
-            // Search trong name
-            if (user.getName() != null && user.getName().toLowerCase().contains(lowerQuery)) {
-                matchFound = true;
-            }
-
-            // Search trong email
-            if (user.getEmail() != null && user.getEmail().toLowerCase().contains(lowerQuery)) {
-                matchFound = true;
-            }
-
-            // Search trong role
-            if (user.getRole() != null && user.getRole().toLowerCase().contains(lowerQuery)) {
-                matchFound = true;
-            }
-
-            // Search trong campus
-            if (user.getCampus() != null && user.getCampus().toLowerCase().contains(lowerQuery)) {
-                matchFound = true;
-            }
-
-            if (matchFound) {
+            // User phải match tất cả các filters
+            if (matchesSearch && matchesRole && matchesCampus) {
                 filteredList.add(user);
             }
         }
 
+        // Cập nhật adapter với filtered list
         adapter.updateUsers(filteredList);
-        updateEmptyState(filteredList.isEmpty());
-
-        if (filteredList.isEmpty()) {
-            emptyTextView.setText("No matches found for \"" + query + "\"");
-        }
+        updateEmptyState(filteredList);
     }
 
     /**
-     * Cập nhật trạng thái empty view
+     * Kiểm tra user có match với search query không
      */
-    private void updateEmptyState(boolean isEmpty) {
-        if (isEmpty) {
+    private boolean matchesSearchQuery(User user, String query) {
+        if (query.isEmpty()) {
+            return true;
+        }
+
+        String lowerQuery = query.toLowerCase().trim();
+
+        // Search trong name
+        if (user.getName() != null && user.getName().toLowerCase().contains(lowerQuery)) {
+            return true;
+        }
+
+        // Search trong email
+        if (user.getEmail() != null && user.getEmail().toLowerCase().contains(lowerQuery)) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Kiểm tra user có match với role filter không
+     */
+    private boolean matchesRoleFilter(User user, String roleFilter) {
+        if (roleFilter.equals("All Roles")) {
+            return true;
+        }
+
+        return user.getRole() != null && user.getRole().equals(roleFilter);
+    }
+
+    /**
+     * Kiểm tra user có match với campus filter không
+     */
+    private boolean matchesCampusFilter(User user, String campusFilter) {
+        if (campusFilter.equals("All Campuses")) {
+            return true;
+        }
+
+        return user.getCampus() != null && user.getCampus().equals(campusFilter);
+    }
+
+    /**
+     * Cập nhật trạng thái empty view dựa trên filtered list
+     */
+    private void updateEmptyState(List<User> filteredList) {
+        if (filteredList.isEmpty()) {
             emptyTextView.setVisibility(View.VISIBLE);
             recyclerView.setVisibility(View.GONE);
+
+            // Tạo message dựa trên filters đang active
+            String message = buildEmptyStateMessage();
+            emptyTextView.setText(message);
         } else {
             emptyTextView.setVisibility(View.GONE);
             recyclerView.setVisibility(View.VISIBLE);
         }
+    }
+
+    /**
+     * Tạo empty state message dựa trên filters đang active
+     */
+    private String buildEmptyStateMessage() {
+        if (allUsers.isEmpty()) {
+            return "No accounts found";
+        }
+
+        List<String> activeFilters = new ArrayList<>();
+
+        if (!currentSearchQuery.isEmpty()) {
+            activeFilters.add("search: \"" + currentSearchQuery + "\"");
+        }
+
+        if (!currentRoleFilter.equals("All Roles")) {
+            activeFilters.add("role: " + currentRoleFilter);
+        }
+
+        if (!currentCampusFilter.equals("All Campuses")) {
+            activeFilters.add("campus: " + currentCampusFilter);
+        }
+
+        if (activeFilters.isEmpty()) {
+            return "No accounts found";
+        }
+
+        return "No matches found for:\n" + String.join(", ", activeFilters);
     }
 
     /**
