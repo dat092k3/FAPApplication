@@ -3,6 +3,10 @@ package com.example.fapapplication;
 import android.app.DatePickerDialog;
 import android.os.Bundle;
 import android.view.View;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.widget.TextView;
+import com.example.fapapplication.utils.ValidationUtils;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -28,6 +32,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
+
 
 /**
  * CreateAccountActivity cho phép Admin tạo account mới cho Teacher hoặc Student.
@@ -58,6 +63,16 @@ public class CreateAccountActivity extends AppCompatActivity {
     private RadioButton radioTeacher;
     private RadioButton radioStudent;
     private Spinner spinnerCampus;
+
+    // Error indicators
+    private TextView tvFullNameError;
+    private TextView tvEmailError;
+    private TextView tvPasswordError;
+    private TextView tvConfirmPasswordError;
+    private TextView tvStudentIdError;
+    private TextView tvBirthdateError;
+    private TextView tvRoleError;
+    private TextView tvCampusError;
 
     // Action buttons
     private Button btnCancel;
@@ -132,11 +147,16 @@ public class CreateAccountActivity extends AppCompatActivity {
         // Cancel button
         btnCancel.setOnClickListener(v -> onBackPressed());
 
-        // Create button - sẽ implement sau
+        // Create button - validate và create account
         btnCreate.setOnClickListener(v -> {
-            // TODO: Will implement in next subtask
-            Toast.makeText(this, "Create functionality will be implemented next", Toast.LENGTH_SHORT).show();
+            if (validateAllFields()) {
+                // TODO: Will implement account creation in next subtask (6.4)
+                Toast.makeText(this, "Validation passed! Account creation coming next.", Toast.LENGTH_SHORT).show();
+            }
         });
+
+        // Setup real-time validation listeners
+        setupValidationListeners();
     }
 
     /**
@@ -202,6 +222,259 @@ public class CreateAccountActivity extends AppCompatActivity {
         datePickerDialog.getDatePicker().setMinDate(minDate.getTimeInMillis());
 
         datePickerDialog.show();
+    }
+
+    /**
+     * Setup real-time validation listeners cho các input fields
+     */
+    private void setupValidationListeners() {
+        // Full Name validation
+        etFullName.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                validateFullName();
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {}
+        });
+
+        // Email validation
+        etEmail.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                validateEmail();
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {}
+        });
+
+        // Password validation
+        etPassword.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                validatePassword();
+                // Also validate confirm password if it has text
+                if (!etConfirmPassword.getText().toString().isEmpty()) {
+                    validateConfirmPassword();
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {}
+        });
+
+        // Confirm Password validation
+        etConfirmPassword.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                validateConfirmPassword();
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {}
+        });
+
+        // Student ID validation (chỉ khi role là Student)
+        etStudentId.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if (radioStudent.isChecked()) {
+                    validateStudentId();
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {}
+        });
+
+        // Role selection listener - toggle Student ID requirement
+        radioGroupRole.setOnCheckedChangeListener((group, checkedId) -> {
+            if (checkedId == R.id.radioStudent) {
+                etStudentId.setEnabled(true);
+                etStudentId.setAlpha(1.0f);
+            } else {
+                etStudentId.setEnabled(false);
+                etStudentId.setAlpha(0.5f);
+                etStudentId.setError(null); // Clear error when disabled
+            }
+        });
+    }
+
+    /**
+     * Validate tất cả fields trước khi submit
+     *
+     * @return true nếu tất cả fields hợp lệ, false nếu có lỗi
+     */
+    private boolean validateAllFields() {
+        boolean isValid = true;
+
+        // Validate từng field
+        if (!validateFullName()) isValid = false;
+        if (!validateEmail()) isValid = false;
+        if (!validatePassword()) isValid = false;
+        if (!validateConfirmPassword()) isValid = false;
+        if (!validateBirthdate()) isValid = false;
+        if (!validateAddress()) isValid = false;
+        if (!validateRole()) isValid = false;
+        if (!validateCampus()) isValid = false;
+
+        // Validate Student ID nếu role là Student
+        if (radioStudent.isChecked()) {
+            if (!validateStudentId()) isValid = false;
+        }
+
+        // Scroll to first error field nếu có lỗi
+        if (!isValid) {
+            scrollView.smoothScrollTo(0, 0);
+            Toast.makeText(this, "Vui lòng kiểm tra lại các trường thông tin.", Toast.LENGTH_SHORT).show();
+        }
+
+        return isValid;
+    }
+
+    /**
+     * Validate Full Name field
+     */
+    private boolean validateFullName() {
+        String fullName = etFullName.getText().toString().trim();
+
+        if (!ValidationUtils.isValidFullName(fullName)) {
+            etFullName.setError(ValidationUtils.getFullNameErrorMessage());
+            return false;
+        }
+
+        etFullName.setError(null);
+        return true;
+    }
+
+    /**
+     * Validate Email field
+     */
+    private boolean validateEmail() {
+        String email = etEmail.getText().toString().trim();
+
+        if (!ValidationUtils.isValidEmail(email)) {
+            etEmail.setError(ValidationUtils.getEmailErrorMessage());
+            return false;
+        }
+
+        etEmail.setError(null);
+        return true;
+    }
+
+    /**
+     * Validate Password field
+     */
+    private boolean validatePassword() {
+        String password = etPassword.getText().toString();
+
+        if (!ValidationUtils.isValidPassword(password)) {
+            etPassword.setError(ValidationUtils.getPasswordErrorMessage());
+            return false;
+        }
+
+        etPassword.setError(null);
+        return true;
+    }
+
+    /**
+     * Validate Confirm Password field
+     */
+    private boolean validateConfirmPassword() {
+        String password = etPassword.getText().toString();
+        String confirmPassword = etConfirmPassword.getText().toString();
+
+        if (!ValidationUtils.passwordsMatch(password, confirmPassword)) {
+            etConfirmPassword.setError(ValidationUtils.getPasswordMismatchErrorMessage());
+            return false;
+        }
+
+        etConfirmPassword.setError(null);
+        return true;
+    }
+
+    /**
+     * Validate Student ID field (chỉ khi role là Student)
+     */
+    private boolean validateStudentId() {
+        String studentId = etStudentId.getText().toString().trim();
+
+        if (!ValidationUtils.isValidStudentId(studentId)) {
+            etStudentId.setError(ValidationUtils.getStudentIdErrorMessage());
+            return false;
+        }
+
+        etStudentId.setError(null);
+        return true;
+    }
+
+    /**
+     * Validate Birthdate field
+     */
+    private boolean validateBirthdate() {
+        String birthdate = etBirthdate.getText().toString().trim();
+
+        if (!ValidationUtils.isValidBirthdate(birthdate)) {
+            etBirthdate.setError(ValidationUtils.getBirthdateErrorMessage());
+            return false;
+        }
+
+        etBirthdate.setError(null);
+        return true;
+    }
+
+    /**
+     * Validate Address field
+     */
+    private boolean validateAddress() {
+        String address = etAddress.getText().toString().trim();
+
+        if (!ValidationUtils.isNotEmpty(address)) {
+            etAddress.setError(ValidationUtils.getRequiredFieldErrorMessage());
+            return false;
+        }
+
+        etAddress.setError(null);
+        return true;
+    }
+
+    /**
+     * Validate Role selection
+     */
+    private boolean validateRole() {
+        if (radioGroupRole.getCheckedRadioButtonId() == -1) {
+            Toast.makeText(this, "Vui lòng chọn Role (Teacher hoặc Student).", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Validate Campus selection
+     */
+    private boolean validateCampus() {
+        if (spinnerCampus.getSelectedItem() == null || campusList.isEmpty()) {
+            Toast.makeText(this, "Vui lòng chọn Campus.", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+        return true;
     }
 
     @Override
