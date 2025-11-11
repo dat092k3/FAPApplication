@@ -146,20 +146,22 @@ public class SubjectListActivity extends AppCompatActivity {
         recyclerView.setAdapter(adapter);
 
         // Thiết lập click listener cho items
-        // Setup click listener for items
         adapter.setOnSubjectClickListener((subject, position) -> {
             // TODO: Navigate to Subject Detail screen (Task 9)
             Toast.makeText(this, "View subject: " + subject.getSubjectName(), Toast.LENGTH_SHORT).show();
             // Intent intent = new Intent(SubjectListActivity.this, SubjectDetailActivity.class);
             // intent.putExtra("SUBJECT_ID", subject.getId());
             // startActivityForResult(intent, REQUEST_CODE_SUBJECT_DETAIL);
+            // overridePendingTransition(android.R.anim.slide_in_left, android.R.anim.slide_out_right);
         });
 
         // Thiết lập long-click listener cho context menu
-        // Setup long-click listener for context menu
-        adapter.setOnSubjectLongClickListener((subject, position) -> {
-            showSubjectOptionsDialog(subject);
-            return true;
+        fabAddSubject.setOnClickListener(v -> {
+            // TODO: Navigate to Create Subject screen (Task 10)
+            Toast.makeText(this, "Create Subject screen coming soon", Toast.LENGTH_SHORT).show();
+            // Intent intent = new Intent(SubjectListActivity.this, CreateSubjectActivity.class);
+            // startActivityForResult(intent, REQUEST_CODE_SUBJECT_DETAIL);
+            // overridePendingTransition(android.R.anim.slide_in_left, android.R.anim.slide_out_right);
         });
     }
 
@@ -416,8 +418,43 @@ public class SubjectListActivity extends AppCompatActivity {
      * Xóa subject khỏi Firebase
      */
     private void deleteSubject(Subject subject) {
-        // TODO: Implement delete functionality in Task 8.5
-        Toast.makeText(this, "Delete functionality coming soon", Toast.LENGTH_SHORT).show();
+        // Hiển thị progress dialog
+        // Show progress dialog
+        AlertDialog progressDialog = new AlertDialog.Builder(this)
+                .setTitle("Deleting Subject")
+                .setMessage("Please wait...")
+                .setCancelable(false)
+                .create();
+        progressDialog.show();
+
+        // Gọi repository để delete
+        // Call repository to delete
+        subjectRepository.deleteSubject(subject.getId(), new SubjectRepository.OperationCallback() {
+            @Override
+            public void onSuccess() {
+                progressDialog.dismiss();
+                Toast.makeText(SubjectListActivity.this,
+                        "Subject \"" + subject.getSubjectName() + "\" deleted successfully",
+                        Toast.LENGTH_SHORT).show();
+
+                // Refresh data sau khi delete
+                // Refresh data after delete
+                refreshData();
+            }
+
+            @Override
+            public void onError(String errorMessage) {
+                progressDialog.dismiss();
+
+                // Hiển thị error dialog
+                // Show error dialog
+                new AlertDialog.Builder(SubjectListActivity.this)
+                        .setTitle("Delete Failed")
+                        .setMessage("Failed to delete subject: " + errorMessage)
+                        .setPositiveButton("OK", null)
+                        .show();
+            }
+        });
     }
 
     /**
