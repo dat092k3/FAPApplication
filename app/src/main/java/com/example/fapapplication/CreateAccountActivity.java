@@ -88,6 +88,11 @@ public class CreateAccountActivity extends AppCompatActivity {
     private ArrayAdapter<String> campusAdapter;
     private Calendar selectedCalendar;
 
+    // State management for account creation process
+    private boolean isCreatingAccount = false;
+    private static final String STATE_IS_CREATING = "state_is_creating";
+    private static final String STATE_BIRTHDATE = "state_birthdate";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -508,7 +513,10 @@ public class CreateAccountActivity extends AppCompatActivity {
      * Tạo account mới trong Firebase Authentication và Realtime Database
      */
     private void createAccount() {
-        // Show loading
+        // Đánh dấu đang trong quá trình tạo account
+        isCreatingAccount = true;
+
+        // Hiển thị loading state
         setLoading(true);
 
         // Lấy thông tin từ form
@@ -551,16 +559,18 @@ public class CreateAccountActivity extends AppCompatActivity {
                 new UserRepository.OnUserOperationListener() {
                     @Override
                     public void onSuccess() {
-                        // Both Auth and DB successful
+                        // Cả Auth và Database đều thành công
+                        isCreatingAccount = false;
                         setLoading(false);
                         showSuccessDialog();
                     }
 
                     @Override
                     public void onError(String errorMessage) {
-                        // DB failed (Auth will be rolled back automatically)
+                        // Lỗi xảy ra, reset state
+                        isCreatingAccount = false;
                         setLoading(false);
-                        showErrorDialog("Lỗi lưu dữ liệu", errorMessage);
+                        showErrorDialog("Lỗi tạo tài khoản", errorMessage);
                     }
                 }
         );
@@ -613,6 +623,52 @@ public class CreateAccountActivity extends AppCompatActivity {
         builder.setMessage(message);
         builder.setPositiveButton("OK", null);
         builder.show();
+    }
+
+    /**
+     * Lưu trạng thái của Activity khi có configuration change (e.g., rotation)
+     * Saves the activity state when configuration changes occur
+     *
+     * @param outState Bundle to save state data
+     */
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+
+        // Lưu trạng thái đang tạo account
+        // Save account creation state
+        outState.putBoolean(STATE_IS_CREATING, isCreatingAccount);
+
+        // Lưu ngày sinh đã chọn (nếu có)
+        // Save selected birthdate if exists
+        if (selectedCalendar != null) {
+            outState.putLong(STATE_BIRTHDATE, selectedCalendar.getTimeInMillis());
+        }
+    }
+
+    /**
+     * Khôi phục trạng thái của Activity sau configuration change
+     * Restores the activity state after configuration changes
+     *
+     * @param savedInstanceState Bundle containing saved state data
+     */
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+
+        // Khôi phục trạng thái đang tạo account
+        // Restore account creation state
+        isCreatingAccount = savedInstanceState.getBoolean(STATE_IS_CREATING, false);
+        if (isCreatingAccount) {
+            setLoading(true);
+        }
+
+        // Khôi phục ngày sinh đã chọn
+        // Restore selected birthdate
+        long birthdateMillis = savedInstanceState.getLong(STATE_BIRTHDATE, -1);
+        if (birthdateMillis != -1) {
+            selectedCalendar.setTimeInMillis(birthdateMillis);
+        }
     }
 
     @Override

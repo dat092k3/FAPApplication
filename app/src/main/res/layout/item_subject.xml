@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
+  android:layout_width="match_parent"
+  android:layout_height="wrap_content"
+  android:layout_margin="8dp"
+  app:cardCornerRadius="8dp"
+  app:cardElevation="4dp"
+  android:foreground="?attr/selectableItemBackground"
+  android:clickable="true"
+  android:focusable="true">
+
+  <androidx.constraintlayout.widget.ConstraintLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="16dp">
+
+    <!-- Subject Code Circle Badge -->
+    <TextView
+      android:id="@+id/tvSubjectCodeBadge"
+      android:layout_width="56dp"
+      android:layout_height="56dp"
+      android:background="@drawable/circle_background_blue"
+      android:gravity="center"
+      android:text="PRM"
+      android:textColor="#FFFFFF"
+      android:textSize="14sp"
+      android:textStyle="bold"
+      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintTop_toTopOf="parent" />
+
+    <!-- Subject Name -->
+    <TextView
+      android:id="@+id/tvSubjectName"
+      android:layout_width="0dp"
+      android:layout_height="wrap_content"
+      android:layout_marginStart="16dp"
+      android:ellipsize="end"
+      android:maxLines="1"
+      android:text="Mobile Programming"
+      android:textColor="#23437B"
+      android:textSize="18sp"
+      android:textStyle="bold"
+      app:layout_constraintEnd_toEndOf="parent"
+      app:layout_constraintStart_toEndOf="@id/tvSubjectCodeBadge"
+      app:layout_constraintTop_toTopOf="@id/tvSubjectCodeBadge" />
+
+    <!-- Full Subject Code -->
+    <TextView
+      android:id="@+id/tvSubjectCode"
+      android:layout_width="0dp"
+      android:layout_height="wrap_content"
+      android:layout_marginStart="16dp"
+      android:layout_marginTop="4dp"
+      android:text="PRM392"
+      android:textColor="#666666"
+      android:textSize="14sp"
+      app:layout_constraintEnd_toEndOf="parent"
+      app:layout_constraintStart_toEndOf="@id/tvSubjectCodeBadge"
+      app:layout_constraintTop_toBottomOf="@id/tvSubjectName" />
+
+    <!-- Assessment Info (number of categories) -->
+    <TextView
+      android:id="@+id/tvAssessmentInfo"
+      android:layout_width="0dp"
+      android:layout_height="wrap_content"
+      android:layout_marginStart="16dp"
+      android:layout_marginTop="4dp"
+      android:text="6 assessment categories"
+      android:textColor="#999999"
+      android:textSize="12sp"
+      app:layout_constraintEnd_toEndOf="parent"
+      app:layout_constraintStart_toEndOf="@id/tvSubjectCodeBadge"
+      app:layout_constraintTop_toBottomOf="@id/tvSubjectCode" />
+
+    <!-- Active Status Indicator -->
+    <ImageView
+      android:id="@+id/ivActiveStatus"
+      android:layout_width="16dp"
+      android:layout_height="16dp"
+      android:layout_marginTop="8dp"
+      android:contentDescription="Status indicator"
+      android:src="@drawable/ic_check_circle"
+      app:tint="#4CAF50"
+      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintTop_toBottomOf="@id/tvSubjectCodeBadge" />
+
+    <!-- Status Label -->
+    <TextView
+      android:id="@+id/tvStatus"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_marginStart="4dp"
+      android:text="Active"
+      android:textColor="#4CAF50"
+      android:textSize="12sp"
+      app:layout_constraintBottom_toBottomOf="@id/ivActiveStatus"
+      app:layout_constraintStart_toEndOf="@id/ivActiveStatus"
+      app:layout_constraintTop_toTopOf="@id/ivActiveStatus" />
+
+    <!-- Created Date -->
+    <TextView
+      android:id="@+id/tvCreatedAt"
+      android:layout_width="0dp"
+      android:layout_height="wrap_content"
+      android:layout_marginStart="16dp"
+      android:gravity="end"
+      android:text="Created: 01/01/2024"
+      android:textColor="#999999"
+      android:textSize="11sp"
+      app:layout_constraintBottom_toBottomOf="@id/tvStatus"
+      app:layout_constraintEnd_toEndOf="parent"
+      app:layout_constraintStart_toEndOf="@id/tvStatus"
+      app:layout_constraintTop_toTopOf="@id/tvStatus" />
+
+  </androidx.constraintlayout.widget.ConstraintLayout>
+
+</androidx.cardview.widget.CardView>
