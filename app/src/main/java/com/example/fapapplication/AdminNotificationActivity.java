@@ -20,6 +20,7 @@ import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.fapapplication.adapter.AdminNotificationAdapter;
 import com.example.fapapplication.adapter.NotificationAdapter;
 import com.example.fapapplication.entity.Notification;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -38,7 +39,7 @@ public class AdminNotificationActivity extends AppCompatActivity {
 
     private RecyclerView rvNotifications;
     private FloatingActionButton btnAdd;
-    private AdminNotificationActivity adapter;
+    private AdminNotificationAdapter adapter;
     private List<Notification> notificationList = new ArrayList<>();
     private DatabaseReference dbRef;
 
@@ -54,7 +55,7 @@ public class AdminNotificationActivity extends AppCompatActivity {
         loadNotifications();
         notificationList.add(new Notification("Noti1","Title", "Message", 1111111));
 
-        adapter = new NotificationAdapter(notificationList, new NotificationAdapter.OnItemClickListener() {
+        adapter = new AdminNotificationAdapter(notificationList, new AdminNotificationAdapter.OnItemClickListener() {
             @Override
             public void onEdit(Notification notification) {
                 showAddEditDialog(notification);

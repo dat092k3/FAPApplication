@@ -3,9 +3,11 @@ package com.example.fapapplication.adapter;
 import android.text.Html;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.fapapplication.R;
@@ -13,7 +15,7 @@ import com.example.fapapplication.entity.Notification;
 
 import java.util.List;
 
-public class AdminNotificationAdapter extends RecyclerView.Adapter<NotificationAdapter.ViewHolder> {
+public class AdminNotificationAdapter extends RecyclerView.Adapter<AdminNotificationAdapter.ViewHolder> {
 
     private List<Notification> notificationList;
     private OnItemClickListener listener;
@@ -23,7 +25,7 @@ public class AdminNotificationAdapter extends RecyclerView.Adapter<NotificationA
         void onDelete(Notification notification);
     }
 
-    public NotificationAdapter(List<Notification> notificationList, OnItemClickListener listener) {
+    public AdminNotificationAdapter(List<Notification> notificationList, OnItemClickListener listener) {
         this.notificationList = notificationList;
         this.listener = listener;
     }
@@ -57,7 +59,7 @@ public class AdminNotificationAdapter extends RecyclerView.Adapter<NotificationA
             super(view);
             title = view.findViewById(R.id.titleInput);
             message = view.findViewById(R.id.messageEditor);
-            btnEdit = view.findViewById(R.id.);
+            btnEdit = view.findViewById(R.id.btnEdit);
             btnDelete = view.findViewById(R.id.btnDelete);
         }
     }
