@@ -386,4 +386,13 @@ public class SubjectRepository {
     public DatabaseReference getSubjectsReference() {
         return subjectsRef;
     }
+
+    /**
+     * Generate unique subject ID sử dụng Firebase push key
+     *
+     * @return Unique subject ID
+     */
+    public String generateSubjectId() {
+        return subjectsRef.push().getKey();
+    }
 }

@@ -13,6 +13,9 @@
       android:theme="@style/Theme.FAPApplication">
         <activity
           android:exported="false"
+          android:name=".CreateSubjectActivity" />
+        <activity
+          android:exported="false"
           android:name=".SubjectDetailActivity" />
         <activity
           android:exported="true"

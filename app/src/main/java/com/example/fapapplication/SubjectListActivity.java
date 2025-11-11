@@ -31,7 +31,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-
 public class SubjectListActivity extends AppCompatActivity {
 
     // UI Components
@@ -57,6 +56,7 @@ public class SubjectListActivity extends AppCompatActivity {
     private String currentStatusFilter = "All";
 
     private static final int REQUEST_CODE_SUBJECT_DETAIL = 102;
+    private static final int REQUEST_CODE_CREATE_SUBJECT = 103;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,7 +64,6 @@ public class SubjectListActivity extends AppCompatActivity {
         setContentView(R.layout.activity_subject_list);
 
         // Kiểm tra authentication
-        // Check authentication
         FirebaseAuth auth = FirebaseAuth.getInstance();
         if (auth.getCurrentUser() == null) {
             Toast.makeText(this, "Please login first", Toast.LENGTH_SHORT).show();
@@ -73,26 +72,21 @@ public class SubjectListActivity extends AppCompatActivity {
         }
 
         // Khởi tạo SubjectRepository
-        // Initialize SubjectRepository
         subjectRepository = SubjectRepository.getInstance();
 
         // Khởi tạo views
-        // Initialize views
         initializeViews();
 
         // Thiết lập RecyclerView
-        // Setup RecyclerView
         setupRecyclerView();
 
         // Load filter options
         loadFilterOptions();
 
         // Thiết lập listeners
-        // Setup listeners
         setupListeners();
 
         // Load dữ liệu từ Firebase
-        // Load data from Firebase
         loadSubjectsFromFirebase();
     }
 
@@ -100,7 +94,6 @@ public class SubjectListActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         // Remove Firebase listener để tránh memory leaks
-        // Remove Firebase listener to avoid memory leaks
         if (subjectsListener != null) {
             subjectRepository.removeListener(subjectsListener);
         }
@@ -113,13 +106,14 @@ public class SubjectListActivity extends AppCompatActivity {
         if (requestCode == REQUEST_CODE_SUBJECT_DETAIL && resultCode == RESULT_OK) {
             // Refresh danh sách sau khi edit
             refreshData();
+        } else if (requestCode == REQUEST_CODE_CREATE_SUBJECT && resultCode == RESULT_OK) {
+            // Refresh danh sách sau khi create
+            refreshData();
+            Toast.makeText(this, "Môn học đã được tạo thành công!", Toast.LENGTH_SHORT).show();
         }
     }
 
-    /**
-     * Khởi tạo tất cả các views
-     * Initialize all views
-     */
+    // Khởi tạo tất cả các views
     private void initializeViews() {
         recyclerView = findViewById(R.id.recyclerViewSubjects);
         progressBar = findViewById(R.id.progressBar);
@@ -135,10 +129,7 @@ public class SubjectListActivity extends AppCompatActivity {
         allSubjects = new ArrayList<>();
     }
 
-    /**
-     * Thiết lập RecyclerView với adapter và layout manager
-     * Setup RecyclerView with adapter and layout manager
-     */
+    // Thiết lập RecyclerView với adapter và layout manager
     private void setupRecyclerView() {
         adapter = new SubjectAdapter(this, new ArrayList<>());
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
@@ -150,23 +141,10 @@ public class SubjectListActivity extends AppCompatActivity {
             intent.putExtra("SUBJECT_ID", subject.getId());
             startActivityForResult(intent, REQUEST_CODE_SUBJECT_DETAIL);
         });
-
-        // Thiết lập long-click listener cho context menu
-        fabAddSubject.setOnClickListener(v -> {
-            // TODO: Navigate to Create Subject screen (Task 10)
-            Toast.makeText(this, "Create Subject screen coming soon", Toast.LENGTH_SHORT).show();
-            // Intent intent = new Intent(SubjectListActivity.this, CreateSubjectActivity.class);
-            // startActivityForResult(intent, REQUEST_CODE_SUBJECT_DETAIL);
-            // overridePendingTransition(android.R.anim.slide_in_left, android.R.anim.slide_out_right);
-        });
     }
 
-    /**
-     * Load filter options vào spinners
-     * Load filter options into spinners
-     */
+    // Load filter options vào spinners
     private void loadFilterOptions() {
-        // Status filter options (All, Active, Inactive)
         List<String> statusOptions = Arrays.asList("All", "Active", "Inactive");
         ArrayAdapter<String> statusAdapter = new ArrayAdapter<>(
                 this,
@@ -177,10 +155,7 @@ public class SubjectListActivity extends AppCompatActivity {
         spinnerStatusFilter.setAdapter(statusAdapter);
     }
 
-    /**
-     * Thiết lập tất cả event listeners
-     * Setup all event listeners
-     */
+    // Thiết lập tất cả event listeners
     private void setupListeners() {
         // Back button
         backButton.setOnClickListener(v -> finish());
@@ -215,22 +190,17 @@ public class SubjectListActivity extends AppCompatActivity {
         // Clear filters button
         btnClearFilters.setOnClickListener(v -> clearFilters());
 
-        // Floating Action Button - Add new subject
+        // Floating Action Button - Tạo subject mới
         fabAddSubject.setOnClickListener(v -> {
-            // TODO: Navigate to Create Subject screen (Task 10)
-            Toast.makeText(this, "Create Subject screen coming soon", Toast.LENGTH_SHORT).show();
-            // Intent intent = new Intent(SubjectListActivity.this, CreateSubjectActivity.class);
-            // startActivityForResult(intent, REQUEST_CODE_SUBJECT_DETAIL);
+            Intent intent = new Intent(SubjectListActivity.this, CreateSubjectActivity.class);
+            startActivityForResult(intent, REQUEST_CODE_CREATE_SUBJECT);
         });
 
         // Swipe to refresh
         swipeRefreshLayout.setOnRefreshListener(this::refreshData);
     }
 
-    /**
-     * Load subjects từ Firebase Realtime Database
-     * Load subjects from Firebase Realtime Database
-     */
+    // Load subjects từ Firebase Realtime Database
     private void loadSubjectsFromFirebase() {
         showLoading(true);
 
@@ -263,10 +233,7 @@ public class SubjectListActivity extends AppCompatActivity {
         });
     }
 
-    /**
-     * Refresh data từ Firebase (dùng cho swipe-to-refresh)
-     * Refresh data from Firebase (used for swipe-to-refresh)
-     */
+    // Refresh data từ Firebase (dùng cho swipe-to-refresh)
     private void refreshData() {
         subjectRepository.getAllSubjectsOnce(new SubjectRepository.SubjectListCallback() {
             @Override
@@ -298,10 +265,7 @@ public class SubjectListActivity extends AppCompatActivity {
         });
     }
 
-    /**
-     * Apply filters (search + status) to subject list
-     * Áp dụng filters (tìm kiếm + trạng thái) cho danh sách subjects
-     */
+    // Áp dụng filters (tìm kiếm + trạng thái) cho danh sách subjects
     private void applyFilters() {
         List<Subject> filteredList = new ArrayList<>(allSubjects);
 
@@ -336,10 +300,10 @@ public class SubjectListActivity extends AppCompatActivity {
             filteredList = statusFiltered;
         }
 
-        // Update adapter with filtered list
+        // Update adapter với filtered list
         adapter.updateSubjectList(filteredList);
 
-        // Show empty state if no results
+        // Hiển thị empty state nếu không có kết quả
         if (filteredList.isEmpty() && !allSubjects.isEmpty()) {
             tvEmptyState.setText("No subjects match your filters");
             showEmptyState(true);
@@ -348,29 +312,23 @@ public class SubjectListActivity extends AppCompatActivity {
         }
     }
 
-    /**
-     * Clear all filters và reset về trạng thái ban đầu
-     * Clear all filters and reset to initial state
-     */
+    // Clear all filters và reset về trạng thái ban đầu
     private void clearFilters() {
         // Clear search
         searchEditText.setText("");
         currentSearchQuery = "";
 
-        // Reset status filter to "All"
+        // Reset status filter về "All"
         spinnerStatusFilter.setSelection(0);
         currentStatusFilter = "All";
 
-        // Apply filters (which will show all subjects)
+        // Apply filters (sẽ hiển thị tất cả subjects)
         applyFilters();
 
         Toast.makeText(this, "Filters cleared", Toast.LENGTH_SHORT).show();
     }
 
-    /**
-     * Hiển thị dialog với options cho subject (Edit, Delete, View Details)
-     * Show dialog with options for subject (Edit, Delete, View Details)
-     */
+    // Hiển thị dialog với options cho subject (Edit, Delete, View Details)
     private void showSubjectOptionsDialog(Subject subject) {
         String[] options = {"View Details", "Edit Subject", "Delete Subject"};
 
@@ -381,12 +339,10 @@ public class SubjectListActivity extends AppCompatActivity {
                 case 0: // View Details
                     Toast.makeText(this, "View subject: " + subject.getSubjectName(),
                             Toast.LENGTH_SHORT).show();
-                    // TODO: Navigate to Subject Detail screen
                     break;
                 case 1: // Edit
                     Toast.makeText(this, "Edit subject: " + subject.getSubjectName(),
                             Toast.LENGTH_SHORT).show();
-                    // TODO: Navigate to Edit Subject screen
                     break;
                 case 2: // Delete
                     showDeleteConfirmationDialog(subject);
@@ -396,10 +352,7 @@ public class SubjectListActivity extends AppCompatActivity {
         builder.show();
     }
 
-    /**
-     * Hiển thị confirmation dialog trước khi delete subject
-     * Show confirmation dialog before deleting subject
-     */
+    // Hiển thị confirmation dialog trước khi delete subject
     private void showDeleteConfirmationDialog(Subject subject) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Delete Subject");
@@ -409,13 +362,9 @@ public class SubjectListActivity extends AppCompatActivity {
         builder.show();
     }
 
-    /**
-     * Delete subject from Firebase
-     * Xóa subject khỏi Firebase
-     */
+    // Xóa subject khỏi Firebase
     private void deleteSubject(Subject subject) {
         // Hiển thị progress dialog
-        // Show progress dialog
         AlertDialog progressDialog = new AlertDialog.Builder(this)
                 .setTitle("Deleting Subject")
                 .setMessage("Please wait...")
@@ -424,7 +373,6 @@ public class SubjectListActivity extends AppCompatActivity {
         progressDialog.show();
 
         // Gọi repository để delete
-        // Call repository to delete
         subjectRepository.deleteSubject(subject.getId(), new SubjectRepository.OperationCallback() {
             @Override
             public void onSuccess() {
@@ -434,7 +382,6 @@ public class SubjectListActivity extends AppCompatActivity {
                         Toast.LENGTH_SHORT).show();
 
                 // Refresh data sau khi delete
-                // Refresh data after delete
                 refreshData();
             }
 
@@ -443,7 +390,6 @@ public class SubjectListActivity extends AppCompatActivity {
                 progressDialog.dismiss();
 
                 // Hiển thị error dialog
-                // Show error dialog
                 new AlertDialog.Builder(SubjectListActivity.this)
                         .setTitle("Delete Failed")
                         .setMessage("Failed to delete subject: " + errorMessage)
@@ -453,28 +399,19 @@ public class SubjectListActivity extends AppCompatActivity {
         });
     }
 
-    /**
-     * Show/hide loading indicator
-     * Hiển thị/ẩn loading indicator
-     */
+    // Hiển thị/ẩn loading indicator
     private void showLoading(boolean show) {
         progressBar.setVisibility(show ? View.VISIBLE : View.GONE);
         recyclerView.setVisibility(show ? View.GONE : View.VISIBLE);
     }
 
-    /**
-     * Show/hide empty state message
-     * Hiển thị/ẩn empty state message
-     */
+    // Hiển thị/ẩn empty state message
     private void showEmptyState(boolean show) {
         tvEmptyState.setVisibility(show ? View.VISIBLE : View.GONE);
         recyclerView.setVisibility(show ? View.GONE : View.VISIBLE);
     }
 
-    /**
-     * Show/hide error message
-     * Hiển thị/ẩn error message
-     */
+    // Hiển thị/ẩn error message
     private void showError(boolean show) {
         tvError.setVisibility(show ? View.VISIBLE : View.GONE);
         recyclerView.setVisibility(show ? View.GONE : View.VISIBLE);
