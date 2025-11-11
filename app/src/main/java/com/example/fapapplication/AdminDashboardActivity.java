@@ -25,7 +25,8 @@ public class AdminDashboardActivity extends AppCompatActivity {
     // UI Components
     private DrawerLayout drawerLayout; // Layout chính cho menu trượt
     private ImageButton menuButton;
-    private CardView cardAccountManagement, cardSubjectManagement, cardClassManagement, cardStatistic;
+    private CardView cardAccountManagement, cardSubjectManagement,
+            cardClassManagement, cardStatistic, cardNotification;
 
     // Logic & Auth
     private NavHeaderManager navHeaderManager; // Lớp quản lý Nav Header
@@ -65,6 +66,7 @@ public class AdminDashboardActivity extends AppCompatActivity {
         cardSubjectManagement = findViewById(R.id.cardSubjectManagement);
         cardClassManagement = findViewById(R.id.cardClassManagement);
         cardStatistic = findViewById(R.id.cardStatistic);
+        cardNotification = findViewById(R.id.cardNotification);
     }
 
     /**
@@ -97,6 +99,7 @@ public class AdminDashboardActivity extends AppCompatActivity {
         cardSubjectManagement.setOnClickListener(v -> startActivity(new Intent(this, SubjectListActivity.class)));
         cardClassManagement.setOnClickListener(v -> startActivity(new Intent(this, ClassListActivity.class)));
         cardStatistic.setOnClickListener(v -> startActivity(new Intent(this, AdminStatisticActivity.class)));
+        cardNotification.setOnClickListener(v -> startActivity(new Intent(this, AdminNotificationActivity.class)));
     }
 
     /**
