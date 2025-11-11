@@ -18,6 +18,11 @@ import com.example.fapapplication.R;
 import com.example.fapapplication.adapter.AttendanceHistoryAdapter;
 import com.example.fapapplication.model.Attendance;
 import com.example.fapapplication.model.AttendanceHistoryItem;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
@@ -38,13 +43,15 @@ public class StudentAttendanceActivity extends AppCompatActivity {
 
     // Data
     private FirebaseFirestore db;
+    private DatabaseReference realtimeDb;
     private AttendanceHistoryAdapter adapter;
     private List<AttendanceHistoryItem> attendanceList;
 
-    // Student info (nhận từ Intent hoặc login session)
+    // Student info
     private String studentId;
     private String studentName;
     private String studentEmail;
+    private String className;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,6 +60,7 @@ public class StudentAttendanceActivity extends AppCompatActivity {
 
         // Initialize Firebase
         db = FirebaseFirestore.getInstance();
+        realtimeDb = FirebaseDatabase.getInstance().getReference();
 
         // Get student info
         getStudentInfo();
@@ -69,25 +77,112 @@ public class StudentAttendanceActivity extends AppCompatActivity {
         // Setup listeners
         setupListeners();
 
-        // Load attendance data
-        loadAttendanceData();
+        // Load student data from Realtime Database first
+        loadStudentFromRealtimeDatabase();
     }
 
     private void getStudentInfo() {
-        // Lấy từ Intent
+        // OPTION 1: Lấy từ Intent (nếu có)
         studentId = getIntent().getStringExtra("studentId");
-        studentName = getIntent().getStringExtra("studentName");
-        studentEmail = getIntent().getStringExtra("studentEmail");
 
-        // Hoặc hardcode để test
+        // OPTION 2: Lấy từ SharedPreferences
         if (studentId == null || studentId.isEmpty()) {
-            studentId = "HE170188";
-            studentName = "Nguyen Van A";
-            studentEmail = "he170188@fpt.edu.vn";
+            SharedPreferences prefs = getSharedPreferences("UserSession", MODE_PRIVATE);
+            studentId = prefs.getString("studentId", "");
         }
 
-        android.util.Log.d("StudentAttendance", "StudentId: " + studentId);
-        android.util.Log.d("StudentAttendance", "StudentName: " + studentName);
+        if (studentId == null || studentId.isEmpty()) {
+            studentId = "he170188"; // Test
+            android.util.Log.w("StudentAttendance", "Using fallback test studentId");
+        }
+
+        android.util.Log.d("StudentAttendance", "Final studentId: " + studentId);
+    }
+
+    private void loadStudentFromRealtimeDatabase() {
+        showLoading(true);
+
+        android.util.Log.d("StudentAttendance", "Loading student data from Realtime Database...");
+        android.util.Log.d("StudentAttendance", "Searching for StudentId: " + studentId);
+
+        // Query by StudentId field
+        realtimeDb.child("Users")
+                .orderByChild("StudentId")
+                .equalTo(studentId)
+                .addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        if (dataSnapshot.exists()) {
+                            // Get student data from Realtime DB
+                            for (DataSnapshot userSnapshot : dataSnapshot.getChildren()) {
+                                studentName = userSnapshot.child("FullName").getValue(String.class);
+                                studentEmail = userSnapshot.child("Email").getValue(String.class);
+                                className = userSnapshot.child("Campus").getValue(String.class);
+
+                                if (studentName == null || studentName.isEmpty()) {
+                                    studentName = "Unknown Student";
+                                }
+                                if (studentEmail == null || studentEmail.isEmpty()) {
+                                    studentEmail = studentId + "@fpt.edu.vn";
+                                }
+                                if (className == null || className.isEmpty()) {
+                                    className = "N/A";
+                                }
+
+                                android.util.Log.d("StudentAttendance", "✓ Loaded from Realtime DB");
+                                updateStudentUI();
+                                loadAttendanceData();
+                                break;
+                            }
+                        } else {
+                            // NẾU KHÔNG TÌM THẤY TRONG REALTIME DB
+                            // Fallback: Lấy từ Firebase Auth
+                            android.util.Log.w("StudentAttendance", "Student not found in Realtime DB, using Firebase Auth data");
+                            loadFromFirebaseAuth();
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+                        android.util.Log.e("StudentAttendance", "Database error, using Firebase Auth fallback");
+                        loadFromFirebaseAuth();
+                    }
+                });
+    }
+
+    private void loadFromFirebaseAuth() {
+        com.google.firebase.auth.FirebaseUser currentUser = com.google.firebase.auth.FirebaseAuth.getInstance().getCurrentUser();
+
+        if (currentUser != null) {
+            studentEmail = currentUser.getEmail();
+            studentName = currentUser.getDisplayName();
+
+            if (studentName == null || studentName.isEmpty()) {
+                studentName = studentEmail != null ? studentEmail.split("@")[0] : "Student";
+            }
+
+            className = "N/A";
+
+            android.util.Log.d("StudentAttendance", "✓ Using Firebase Auth data");
+            android.util.Log.d("StudentAttendance", "  Name: " + studentName);
+            android.util.Log.d("StudentAttendance", "  Email: " + studentEmail);
+
+            updateStudentUI();
+            loadAttendanceData();
+        } else {
+            showLoading(false);
+            Toast.makeText(this, "Please login first", Toast.LENGTH_LONG).show();
+            finish();
+        }
+    }
+
+    private void updateStudentUI() {
+        if (studentName != null && !studentName.isEmpty()) {
+            tvAvatar.setText(studentName.substring(0, 1).toUpperCase());
+            tvStudentName.setText(studentName);
+        }
+        tvStudentId.setText(studentId.toUpperCase()); // Display uppercase
+        tvEmail.setText(studentEmail);
     }
 
     private void initViews() {
@@ -106,14 +201,6 @@ public class StudentAttendanceActivity extends AppCompatActivity {
         rvAttendanceHistory = findViewById(R.id.rvAttendanceHistory);
         layoutEmptyState = findViewById(R.id.layoutEmptyState);
         progressBar = findViewById(R.id.progressBar);
-
-        // Set student info
-        if (studentName != null && !studentName.isEmpty()) {
-            tvAvatar.setText(studentName.substring(0, 1).toUpperCase());
-        }
-        tvStudentName.setText(studentName);
-        tvStudentId.setText(studentId);
-        tvEmail.setText(studentEmail);
     }
 
     private void setupToolbar() {
@@ -186,10 +273,11 @@ public class StudentAttendanceActivity extends AppCompatActivity {
     }
 
     private void loadAttendanceData() {
-        showLoading(true);
+        // showLoading đã được gọi trong loadStudentFromRealtimeDatabase()
 
         android.util.Log.d("StudentAttendance", "Loading attendance for: " + studentId);
 
+        // Query với studentId LOWERCASE (như trong Firestore)
         db.collection("attendances")
                 .whereEqualTo("studentId", studentId)
                 .orderBy("date", Query.Direction.DESCENDING)
@@ -237,7 +325,7 @@ public class StudentAttendanceActivity extends AppCompatActivity {
 
                     showLoading(false);
 
-                    android.util.Log.d("StudentAttendance", "Loaded successfully");
+                    android.util.Log.d("StudentAttendance", "✓ Attendance loaded successfully");
                 })
                 .addOnFailureListener(e -> {
                     showLoading(false);

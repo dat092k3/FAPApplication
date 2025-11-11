@@ -20,6 +20,7 @@ import com.example.fapapplication.model.Student;
 import com.example.fapapplication.model.StudentAttendanceItem;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.WriteBatch;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -48,6 +49,8 @@ public class CheckAttendanceActivity extends AppCompatActivity {
 
     // Class info (nhận từ Intent)
     private String className;
+    private String classId;
+    private String classSubjectId;
     private String subject;
     private String date;
     private String time;
@@ -82,20 +85,31 @@ public class CheckAttendanceActivity extends AppCompatActivity {
 
     private void getIntentData() {
         className = getIntent().getStringExtra("className");
+        classId = getIntent().getStringExtra("CLASS_ID");
+        classSubjectId = getIntent().getStringExtra("CLASS_SUBJECT_ID");
         subject = getIntent().getStringExtra("subject");
+        if (subject == null || subject.isEmpty()) {
+            subject = getIntent().getStringExtra("SUBJECT_CODE");
+        }
         date = getIntent().getStringExtra("date");
         time = getIntent().getStringExtra("time");
 
         android.util.Log.d("CheckAttendance", "==== INTENT DATA ====");
         android.util.Log.d("CheckAttendance", "className: " + className);
+        android.util.Log.d("CheckAttendance", "classId: " + classId);
+        android.util.Log.d("CheckAttendance", "classSubjectId: " + classSubjectId);
         android.util.Log.d("CheckAttendance", "subject: " + subject);
         android.util.Log.d("CheckAttendance", "date: " + date);
         android.util.Log.d("CheckAttendance", "time: " + time);
 
-        // KIỂM TRA VÀ SET DEFAULT NẾU NULL
         if (className == null || className.isEmpty()) {
-            android.util.Log.w("CheckAttendance", "⚠️ className is NULL! Setting default to SE1856");
-            className = "SE1856"; // Default value để test
+            if (classId != null && !classId.isEmpty()) {
+                android.util.Log.w("CheckAttendance", "className missing, deriving from classId");
+                className = classId.contains("_") ? classId.split("_")[0] : classId;
+            } else {
+                android.util.Log.w("CheckAttendance", "⚠️ className is NULL! Setting default to SE1856");
+                className = "SE1856"; // Default value để test
+            }
         }
 
         if (subject == null || subject.isEmpty()) {
@@ -141,7 +155,11 @@ public class CheckAttendanceActivity extends AppCompatActivity {
         progressBar = findViewById(R.id.progressBar);
 
         // Set class info
-        tvClassName.setText(className);
+        String classDisplay = className;
+        if ((classDisplay == null || classDisplay.isEmpty()) && classId != null && !classId.isEmpty()) {
+            classDisplay = classId;
+        }
+        tvClassName.setText(classDisplay);
         tvSubject.setText("Subject: " + subject);
         tvDate.setText("Date: " + date);
         tvTime.setText("Time: " + time);
@@ -217,18 +235,89 @@ public class CheckAttendanceActivity extends AppCompatActivity {
         android.util.Log.d("CheckAttendance", "No hardcoded students, trying Firebase...");
 
         // OPTION 2: Load từ Firebase collection "students"
-        db.collection("students")
-                .whereEqualTo("className", className)
-                .get()
+        Query studentQuery;
+        boolean attemptedClassIdQuery = false;
+
+        if (classId != null && !classId.isEmpty()) {
+            attemptedClassIdQuery = true;
+            studentQuery = db.collection("students")
+                    .whereEqualTo("classId", classId);
+            android.util.Log.d("CheckAttendance", "Loading students by classId: " + classId);
+        } else {
+            studentQuery = db.collection("students")
+                    .whereEqualTo("className", className);
+            android.util.Log.d("CheckAttendance", "Loading students by className: " + className);
+        }
+
+        final boolean shouldFallbackToClassName = attemptedClassIdQuery && className != null && !className.isEmpty();
+
+        studentQuery.get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
                     android.util.Log.d("CheckAttendance", "Firebase query success");
                     android.util.Log.d("CheckAttendance", "Documents found: " + queryDocumentSnapshots.size());
 
                     if (queryDocumentSnapshots.isEmpty()) {
+                        if (shouldFallbackToClassName) {
+                            android.util.Log.w("CheckAttendance", "No students found with classId. Falling back to className query.");
+                            loadStudentsByClassNameFallback();
+                        } else {
+                            showLoading(false);
+                            Toast.makeText(this,
+                                    "No students found. Please add students to the list.",
+                                    Toast.LENGTH_LONG).show();
+                        }
+                        return;
+                    }
+
+                    List<Student> students = new ArrayList<>();
+                    for (DocumentSnapshot doc : queryDocumentSnapshots.getDocuments()) {
+                        Student student = doc.toObject(Student.class);
+                        if (student != null) {
+                            students.add(student);
+                        }
+                    }
+
+                    loadAttendanceForStudents(students);
+                })
+                .addOnFailureListener(e -> {
+                    if (shouldFallbackToClassName) {
+                        android.util.Log.w("CheckAttendance", "ClassId student query failed, retrying with className", e);
+                        loadStudentsByClassNameFallback();
+                    } else {
+                        showLoading(false);
+                        String errorMsg = "Error loading students: " + e.getMessage();
+                        Toast.makeText(this, errorMsg, Toast.LENGTH_LONG).show();
+                        android.util.Log.e("LoadStudents", "Error details: ", e);
+                        e.printStackTrace();
+                    }
+                });
+    }
+
+    private void loadStudentsByClassNameFallback() {
+        if (className == null || className.isEmpty()) {
+            showLoading(false);
+            Toast.makeText(this,
+                    "No class information available to load students.",
+                    Toast.LENGTH_LONG).show();
+            android.util.Log.e("CheckAttendance", "Fallback to className failed: className is empty");
+            return;
+        }
+
+        android.util.Log.d("CheckAttendance", "Fallback loading students by className: " + className);
+
+        db.collection("students")
+                .whereEqualTo("className", className)
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    android.util.Log.d("CheckAttendance", "Fallback query success");
+                    android.util.Log.d("CheckAttendance", "Documents found: " + queryDocumentSnapshots.size());
+
+                    if (queryDocumentSnapshots.isEmpty()) {
                         showLoading(false);
                         Toast.makeText(this,
-                                "No students found. Please add students to the list.",
+                                "No students found for class " + className,
                                 Toast.LENGTH_LONG).show();
+                        android.util.Log.w("CheckAttendance", "Fallback query returned empty list");
                         return;
                     }
 
@@ -246,8 +335,7 @@ public class CheckAttendanceActivity extends AppCompatActivity {
                     showLoading(false);
                     String errorMsg = "Error loading students: " + e.getMessage();
                     Toast.makeText(this, errorMsg, Toast.LENGTH_LONG).show();
-                    android.util.Log.e("LoadStudents", "Error details: ", e);
-                    e.printStackTrace();
+                    android.util.Log.e("LoadStudentsFallback", "Error details: ", e);
                 });
     }
 
@@ -263,9 +351,14 @@ public class CheckAttendanceActivity extends AppCompatActivity {
         studentList.clear();
 
         // Load existing attendance records
-        db.collection("attendances")
-                .whereEqualTo("classSessionId", classSessionId)
-                .get()
+        Query attendanceQuery = db.collection("attendances")
+                .whereEqualTo("classSessionId", classSessionId);
+
+        if (subject != null && !subject.isEmpty()) {
+            attendanceQuery = attendanceQuery.whereEqualTo("subject", subject);
+        }
+
+        attendanceQuery.get()
                 .addOnSuccessListener(attendanceSnapshots -> {
                     android.util.Log.d("CheckAttendance", "Attendance query success");
                     android.util.Log.d("CheckAttendance", "Attendance records found: " + attendanceSnapshots.size());
@@ -334,6 +427,12 @@ public class CheckAttendanceActivity extends AppCompatActivity {
             attendanceData.put("studentId", student.getStudentId());
             attendanceData.put("classSessionId", classSessionId);
             attendanceData.put("className", className);
+            if (classId != null && !classId.isEmpty()) {
+                attendanceData.put("classId", classId);
+            }
+            if (classSubjectId != null && !classSubjectId.isEmpty()) {
+                attendanceData.put("classSubjectId", classSubjectId);
+            }
             attendanceData.put("date", date);
             attendanceData.put("subject", subject);
             attendanceData.put("status", item.isPresent()); // true = present, false = absent

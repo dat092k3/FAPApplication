@@ -12,6 +12,8 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
 
+import com.example.fapapplication.activity.CurriculumActivity;
+import com.example.fapapplication.activity.StudentAttendanceActivity;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
@@ -30,6 +32,7 @@ public class HomePage extends AppCompatActivity {
 
     // Khai báo các CardView để bắt sự kiện click
     private CardView cardNotification, cardAppStatus, cardTimetable, cardExamSchedule, cardSemesterSchedule;
+    private CardView cardAttendanceReport, cardMarkReport, cardCurriculumReport;
 
     // Firebase và Google Auth
     private FirebaseAuth auth;
@@ -71,6 +74,9 @@ public class HomePage extends AppCompatActivity {
         // cardNotification = findViewById(R.id.cardNotification);
         // cardAppStatus = findViewById(R.id.cardAppStatus);
         // ... (làm tương tự cho các card khác)
+        cardAttendanceReport = findViewById(R.id.cardAttendanceReport);
+        cardMarkReport = findViewById(R.id.cardMarkReport);
+        cardCurriculumReport = findViewById(R.id.cardCurriculumReport);
     }
 
     private void setupClickListeners() {
@@ -100,6 +106,21 @@ public class HomePage extends AppCompatActivity {
         cardNotification.setOnClickListener(v -> showToast("Notification Card Clicked"));
         cardAppStatus.setOnClickListener(v -> showToast("Application Status Card Clicked"));
         */
+        if (cardAttendanceReport != null) {
+            cardAttendanceReport.setOnClickListener(v ->
+                    startActivity(new Intent(HomePage.this, StudentAttendanceActivity.class))
+            );
+        }
+        if (cardMarkReport != null) {
+            cardMarkReport.setOnClickListener(v ->
+                    showToast("Mark Report clicked")
+            );
+        }
+        if (cardCurriculumReport != null) {
+            cardCurriculumReport.setOnClickListener(v ->
+                    startActivity(new Intent(HomePage.this, CurriculumActivity.class))
+            );
+        }
     }
 
     // Hiển thị một PopupMenu khi người dùng nhấn vào nút menu

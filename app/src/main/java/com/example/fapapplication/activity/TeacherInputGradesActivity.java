@@ -35,7 +35,7 @@ public class TeacherInputGradesActivity extends AppCompatActivity {
 
     // UI Components
     private Toolbar toolbar;
-    private TextView tvClassName, tvSubject, tvTotalStudents;
+    private TextView tvClassName, tvSubject, tvRoom, tvTotalStudents;
     private EditText etSearch;
     private RecyclerView rvStudentGrades;
     private Button btnSaveAll;
@@ -49,6 +49,7 @@ public class TeacherInputGradesActivity extends AppCompatActivity {
     // Class info
     private String className;
     private String subject;
+    private String room;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,6 +81,23 @@ public class TeacherInputGradesActivity extends AppCompatActivity {
     private void getClassInfo() {
         className = getIntent().getStringExtra("className");
         subject = getIntent().getStringExtra("subject");
+        room = getIntent().getStringExtra("room");
+        if (room == null || room.isEmpty()) {
+            room = getIntent().getStringExtra("room_display");
+        }
+
+        // Fallback: nhận từ SelectSubjectClassActivity theo key mới
+        if ((className == null || className.isEmpty())) {
+            String classId = getIntent().getStringExtra("CLASS_ID");
+            if (classId != null && !classId.isEmpty()) {
+                // Lấy phần trước "_" làm className ngắn (VD: "SE1856" từ "SE1856_FALL2024")
+                className = classId.split("_")[0];
+            }
+        }
+        if (subject == null || subject.isEmpty()) {
+            // Sử dụng SUBJECT_CODE thay thế
+            subject = getIntent().getStringExtra("SUBJECT_CODE");
+        }
 
         // Default values for testing
         if (className == null || className.isEmpty()) {
@@ -95,6 +113,7 @@ public class TeacherInputGradesActivity extends AppCompatActivity {
         toolbar = findViewById(R.id.toolbar);
         tvClassName = findViewById(R.id.tvClassName);
         tvSubject = findViewById(R.id.tvSubject);
+        tvRoom = findViewById(R.id.tvRoom);
         tvTotalStudents = findViewById(R.id.tvTotalStudents);
         etSearch = findViewById(R.id.etSearch);
         rvStudentGrades = findViewById(R.id.rvStudentGrades);
@@ -104,6 +123,12 @@ public class TeacherInputGradesActivity extends AppCompatActivity {
         // Set class info
         tvClassName.setText(className);
         tvSubject.setText("Subject: " + subject);
+        if (room != null && !room.isEmpty()) {
+            tvRoom.setText("Room: " + room);
+            tvRoom.setVisibility(View.VISIBLE);
+        } else {
+            tvRoom.setVisibility(View.GONE);
+        }
     }
 
     private void setupToolbar() {
@@ -168,9 +193,11 @@ public class TeacherInputGradesActivity extends AppCompatActivity {
     }
 
     private void loadStudentsFromFirebase() {
-        db.collection("students")
-                .whereEqualTo("className", className)
-                .get()
+        com.google.firebase.firestore.Query studentQuery = db.collection("students")
+                .whereEqualTo("className", className);
+
+
+        studentQuery.get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
                     List<Student> students = new ArrayList<>();
                     for (DocumentSnapshot doc : queryDocumentSnapshots.getDocuments()) {
@@ -200,9 +227,12 @@ public class TeacherInputGradesActivity extends AppCompatActivity {
         gradeList.clear();
 
         // Load existing grades from Firebase
-        db.collection("grades")
+        com.google.firebase.firestore.Query gradeQuery = db.collection("grades")
                 .whereEqualTo("className", className)
-                .get()
+                .whereEqualTo("subject", subject);
+
+
+        gradeQuery.get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
                     // Create a map of existing grades
                     Map<String, Grade> gradesMap = new HashMap<>();
@@ -274,6 +304,7 @@ public class TeacherInputGradesActivity extends AppCompatActivity {
             gradeData.put("studentId", grade.getStudentId());
             gradeData.put("className", grade.getClassName());
             gradeData.put("subject", grade.getSubject());
+
             gradeData.put("pt1", grade.getPt1());
             gradeData.put("pt2", grade.getPt2());
             gradeData.put("participation", grade.getParticipation());

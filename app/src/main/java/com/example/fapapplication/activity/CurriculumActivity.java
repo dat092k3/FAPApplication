@@ -1,6 +1,8 @@
 package com.example.fapapplication.activity;
 
 import android.os.Bundle;
+import android.view.View;
+import android.widget.ImageButton;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -15,6 +17,7 @@ public class CurriculumActivity extends AppCompatActivity {
     private RecyclerView rvCurriculum;
     private CurriculumAdapter adapter;
     private ArrayList<Curriculum> list = new ArrayList<>();
+    private ImageButton btnBack;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -22,6 +25,7 @@ public class CurriculumActivity extends AppCompatActivity {
         setContentView(R.layout.activity_curriculum);
 
         rvCurriculum = findViewById(R.id.rvCurriculum);
+        btnBack = findViewById(R.id.btnBack);
         rvCurriculum.setLayoutManager(new LinearLayoutManager(this));
 
         // ✅ Thêm dữ liệu thủ công (hardcode)
@@ -29,6 +33,11 @@ public class CurriculumActivity extends AppCompatActivity {
 
         adapter = new CurriculumAdapter(list);
         rvCurriculum.setAdapter(adapter);
+        
+        // Setup back button
+        if (btnBack != null) {
+            btnBack.setOnClickListener(v -> finish());
+        }
     }
 
     private void loadData() {

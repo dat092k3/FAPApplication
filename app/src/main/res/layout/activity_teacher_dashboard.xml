@@ -79,6 +79,7 @@
                 android:layout_marginBottom="16dp">
 
                 <androidx.cardview.widget.CardView
+
                     android:layout_width="0dp"
                     android:layout_height="140dp"
                     android:layout_weight="1"
@@ -110,6 +111,7 @@
                 </androidx.cardview.widget.CardView>
 
                 <androidx.cardview.widget.CardView
+
                     android:layout_width="0dp"
                     android:layout_height="140dp"
                     android:layout_weight="1"
@@ -165,6 +167,7 @@
                 android:layout_marginBottom="16dp">
 
                 <androidx.cardview.widget.CardView
+                    android:id="@+id/cardCheckAttendance"
                     android:layout_width="0dp"
                     android:layout_height="140dp"
                     android:layout_weight="1"
@@ -181,23 +184,25 @@
                         android:padding="16dp">
 
                         <ImageView
-                            android:layout_width="50dp"
-                            android:layout_height="50dp"
-
-                            android:contentDescription="Weekly Timetable Icon" />
+                            android:layout_width="60dp"
+                            android:layout_height="60dp"
+                            android:src="@drawable/outline_checklist_24"
+                            app:tint="#F49D00"
+                            android:contentDescription="Check Attendaces" />
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Weekly timetable"
-                            android:textColor="#F49D00"
-                            android:textStyle="bold"
                             android:layout_marginTop="8dp"
-                            android:textAlignment="center" />
+                            android:text="Check Attendances"
+                            android:textAlignment="center"
+                            android:textColor="#F49D00"
+                            android:textStyle="bold" />
                     </LinearLayout>
                 </androidx.cardview.widget.CardView>
 
                 <androidx.cardview.widget.CardView
+                    android:id="@+id/cardGrades"
                     android:layout_width="0dp"
                     android:layout_height="140dp"
                     android:layout_weight="1"
@@ -214,18 +219,21 @@
                         android:padding="16dp">
 
                         <ImageView
-                            android:layout_width="50dp"
-                            android:layout_height="50dp"
+                            android:layout_width="60dp"
+                            android:layout_height="60dp"
+                            android:src="@drawable/outline_bar_chart_24"
+                            app:tint="#F49D00"
 
                             android:contentDescription="Exam Schedule Icon" />
+
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Exam schedule"
-                            android:textColor="#F49D00"
-                            android:textStyle="bold"
                             android:layout_marginTop="8dp"
-                            android:textAlignment="center" />
+                            android:text="Grades"
+                            android:textAlignment="center"
+                            android:textColor="#F49D00"
+                            android:textStyle="bold" />
                     </LinearLayout>
                 </androidx.cardview.widget.CardView>
             </LinearLayout>

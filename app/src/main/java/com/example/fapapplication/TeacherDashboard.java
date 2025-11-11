@@ -10,6 +10,8 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
 
+import com.example.fapapplication.activity.SelectSubjectClassActivity;
+import com.example.fapapplication.activity.SelectSubjectClassAttendanceActivity;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
@@ -25,6 +27,7 @@ public class TeacherDashboard extends AppCompatActivity {
 
     // Khai báo các CardView để bắt sự kiện click
     private CardView cardNotification, cardAppStatus, cardTimetable, cardExamSchedule, cardSemesterSchedule;
+    private CardView cardCheckAttendance, cardGrades;
 
     // Firebase và Google Auth
     private FirebaseAuth auth;
@@ -33,7 +36,7 @@ public class TeacherDashboard extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_home_page);
+        setContentView(R.layout.activity_teacher_dashboard);
 
         // --- KIỂM TRA ĐĂNG NHẬP ---
         auth = FirebaseAuth.getInstance();
@@ -66,6 +69,8 @@ public class TeacherDashboard extends AppCompatActivity {
         // cardNotification = findViewById(R.id.cardNotification);
         // cardAppStatus = findViewById(R.id.cardAppStatus);
         // ... (làm tương tự cho các card khác)
+        cardCheckAttendance = findViewById(R.id.cardCheckAttendance);
+        cardGrades = findViewById(R.id.cardGrades);
     }
 
     private void setupClickListeners() {
@@ -95,6 +100,16 @@ public class TeacherDashboard extends AppCompatActivity {
         cardNotification.setOnClickListener(v -> showToast("Notification Card Clicked"));
         cardAppStatus.setOnClickListener(v -> showToast("Application Status Card Clicked"));
         */
+        if (cardCheckAttendance != null) {
+            cardCheckAttendance.setOnClickListener(v ->
+                    startActivity(new Intent(TeacherDashboard.this, SelectSubjectClassAttendanceActivity.class))
+            );
+        }
+        if (cardGrades != null) {
+            cardGrades.setOnClickListener(v ->
+                    startActivity(new Intent(TeacherDashboard.this, SelectSubjectClassActivity.class))
+            );
+        }
     }
 
     // Hiển thị một PopupMenu khi người dùng nhấn vào nút menu
