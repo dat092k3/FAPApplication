@@ -48,7 +48,7 @@ public class AdminStatisticActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_admin_dashboard);
+        setContentView(R.layout.activity_admin_statistic);
 
         // Initialize Firebase
         databaseReference = FirebaseDatabase.getInstance().getReference();
@@ -95,18 +95,6 @@ public class AdminStatisticActivity extends AppCompatActivity {
             Toast.makeText(this, "Refreshed", Toast.LENGTH_SHORT).show();
         });
 
-        // Feature Flag Switches
-        notificationSwitch.setOnCheckedChangeListener((buttonView, isChecked) ->
-                updateFeatureFlag("notificationEnabled", isChecked));
-
-        timetableSwitch.setOnCheckedChangeListener((buttonView, isChecked) ->
-                updateFeatureFlag("timetableEnabled", isChecked));
-
-        examScheduleSwitch.setOnCheckedChangeListener((buttonView, isChecked) ->
-                updateFeatureFlag("examScheduleEnabled", isChecked));
-
-        applicationStatusSwitch.setOnCheckedChangeListener((buttonView, isChecked) ->
-                updateFeatureFlag("applicationStatusEnabled", isChecked));
     }
 
     private void setupCharts() {
@@ -140,58 +128,58 @@ public class AdminStatisticActivity extends AppCompatActivity {
         lineLegend.setEnabled(false);
     }
 
-    private void loadFeatureFlags() {
-        featureFlagsRef.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                if (snapshot.exists()) {
-                    notificationSwitch.setChecked(
-                            snapshot.child("notificationEnabled").getValue(Boolean.class) != null ?
-                                    snapshot.child("notificationEnabled").getValue(Boolean.class) : true
-                    );
-                    timetableSwitch.setChecked(
-                            snapshot.child("timetableEnabled").getValue(Boolean.class) != null ?
-                                    snapshot.child("timetableEnabled").getValue(Boolean.class) : true
-                    );
-                    examScheduleSwitch.setChecked(
-                            snapshot.child("examScheduleEnabled").getValue(Boolean.class) != null ?
-                                    snapshot.child("examScheduleEnabled").getValue(Boolean.class) : true
-                    );
-                    applicationStatusSwitch.setChecked(
-                            snapshot.child("applicationStatusEnabled").getValue(Boolean.class) != null ?
-                                    snapshot.child("applicationStatusEnabled").getValue(Boolean.class) : true
-                    );
-                } else {
-                    // Initialize with default values
-                    initializeDefaultFeatureFlags();
-                }
-            }
+//    private void loadFeatureFlags() {
+//        featureFlagsRef.addListenerForSingleValueEvent(new ValueEventListener() {
+//            @Override
+//            public void onDataChange(@NonNull DataSnapshot snapshot) {
+//                if (snapshot.exists()) {
+//                    notificationSwitch.setChecked(
+//                            snapshot.child("notificationEnabled").getValue(Boolean.class) != null ?
+//                                    snapshot.child("notificationEnabled").getValue(Boolean.class) : true
+//                    );
+//                    timetableSwitch.setChecked(
+//                            snapshot.child("timetableEnabled").getValue(Boolean.class) != null ?
+//                                    snapshot.child("timetableEnabled").getValue(Boolean.class) : true
+//                    );
+//                    examScheduleSwitch.setChecked(
+//                            snapshot.child("examScheduleEnabled").getValue(Boolean.class) != null ?
+//                                    snapshot.child("examScheduleEnabled").getValue(Boolean.class) : true
+//                    );
+//                    applicationStatusSwitch.setChecked(
+//                            snapshot.child("applicationStatusEnabled").getValue(Boolean.class) != null ?
+//                                    snapshot.child("applicationStatusEnabled").getValue(Boolean.class) : true
+//                    );
+//                } else {
+//                    // Initialize with default values
+//                    initializeDefaultFeatureFlags();
+//                }
+//            }
+//
+//            @Override
+//            public void onCancelled(@NonNull DatabaseError error) {
+//                Toast.makeText(AdminStatisticActivity.this,
+//                        "Error loading feature flags", Toast.LENGTH_SHORT).show();
+//            }
+//        });
+//    }
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-                Toast.makeText(AdminStatisticActivity.this,
-                        "Error loading feature flags", Toast.LENGTH_SHORT).show();
-            }
-        });
-    }
+//    private void initializeDefaultFeatureFlags() {
+//        Map<String, Object> defaultFlags = new HashMap<>();
+//        defaultFlags.put("notificationEnabled", true);
+//        defaultFlags.put("timetableEnabled", true);
+//        defaultFlags.put("examScheduleEnabled", true);
+//        defaultFlags.put("applicationStatusEnabled", true);
+//
+//        featureFlagsRef.setValue(defaultFlags);
+//    }
 
-    private void initializeDefaultFeatureFlags() {
-        Map<String, Object> defaultFlags = new HashMap<>();
-        defaultFlags.put("notificationEnabled", true);
-        defaultFlags.put("timetableEnabled", true);
-        defaultFlags.put("examScheduleEnabled", true);
-        defaultFlags.put("applicationStatusEnabled", true);
-
-        featureFlagsRef.setValue(defaultFlags);
-    }
-
-    private void updateFeatureFlag(String flagName, boolean value) {
-        featureFlagsRef.child(flagName).setValue(value)
-                .addOnSuccessListener(aVoid ->
-                        Toast.makeText(this, "Feature updated", Toast.LENGTH_SHORT).show())
-                .addOnFailureListener(e ->
-                        Toast.makeText(this, "Error updating feature", Toast.LENGTH_SHORT).show());
-    }
+//    private void updateFeatureFlag(String flagName, boolean value) {
+//        featureFlagsRef.child(flagName).setValue(value)
+//                .addOnSuccessListener(aVoid ->
+//                        Toast.makeText(this, "Feature updated", Toast.LENGTH_SHORT).show())
+//                .addOnFailureListener(e ->
+//                        Toast.makeText(this, "Error updating feature", Toast.LENGTH_SHORT).show());
+//    }
 
     private void loadStatistics() {
         // Load user statistics
