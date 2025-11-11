@@ -1,5 +1,6 @@
 package com.example.fapapplication;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -147,8 +148,9 @@ public class ClassListActivity extends AppCompatActivity {
 
         // Thiết lập click listener cho items
         adapter.setOnClassClickListener((classItem, position) -> {
-            Toast.makeText(this, "View: " + classItem.getClassName(), Toast.LENGTH_SHORT).show();
-            // TODO: Navigate to Class Detail screen (Task 13)
+            Intent intent = new Intent(ClassListActivity.this, ClassDetailActivity.class);
+            intent.putExtra("CLASS_ID", classItem.getId());
+            startActivityForResult(intent, REQUEST_CODE_CLASS_DETAIL);
         });
 
         // Thiết lập long-click listener cho context menu
@@ -436,10 +438,10 @@ public class ClassListActivity extends AppCompatActivity {
         builder.setTitle(classItem.getClassName());
         builder.setItems(options, (dialog, which) -> {
             switch (which) {
-                case 0: // View Details
-                    Toast.makeText(this, "View class: " + classItem.getClassName(),
-                            Toast.LENGTH_SHORT).show();
-                    // TODO: Navigate to Class Detail screen (Task 13)
+                case 0: // Xem chi tiết
+                    Intent intent = new Intent(ClassListActivity.this, ClassDetailActivity.class);
+                    intent.putExtra("CLASS_ID", classItem.getId());
+                    startActivityForResult(intent, REQUEST_CODE_CLASS_DETAIL);
                     break;
                 case 1: // Edit
                     Toast.makeText(this, "Edit class: " + classItem.getClassName(),
