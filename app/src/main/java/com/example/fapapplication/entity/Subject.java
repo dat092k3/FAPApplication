@@ -1,5 +1,8 @@
 package com.example.fapapplication.entity;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.room.Entity;
@@ -38,6 +41,10 @@ public class Subject {
 
     private boolean isActive; // Trạng thái active/inactive
 
+    @Ignore // Room should ignore this for now
+    @Nullable
+    private List<AssessmentCategory> assessments; // Danh sách các assessment categories
+
     /**
      * Constructor rỗng bắt buộc cho Room và Firebase
      */
@@ -64,6 +71,7 @@ public class Subject {
         this.description = description;
         this.createdAt = createdAt;
         this.isActive = isActive;
+        this.assessments = new ArrayList<>(); // Initialize empty list
     }
 
     // === GETTERS ===
@@ -122,6 +130,15 @@ public class Subject {
         isActive = active;
     }
 
+    @Nullable
+    public List<AssessmentCategory> getAssessments() {
+        return assessments;
+    }
+
+    public void setAssessments(@Nullable List<AssessmentCategory> assessments) {
+        this.assessments = assessments;
+    }
+
     // === FIREBASE METHODS ===
 
     /**
@@ -139,6 +156,16 @@ public class Subject {
         map.put("Description", description != null ? description : "");
         map.put("CreatedAt", createdAt);
         map.put("IsActive", isActive);
+
+        // Add assessments if present
+        if (assessments != null && !assessments.isEmpty()) {
+            List<Map<String, Object>> assessmentMaps = new ArrayList<>();
+            for (AssessmentCategory category : assessments) {
+                assessmentMaps.add(category.toFirebaseMap());
+            }
+            map.put("Assessments", assessmentMaps);
+        }
+
         return map;
     }
 
@@ -165,6 +192,17 @@ public class Subject {
             // Parse active status (default true nếu không có)
             Boolean isActive = snapshot.child("IsActive").getValue(Boolean.class);
             subject.setActive(isActive != null ? isActive : true);
+
+            // Parse assessments
+            List<AssessmentCategory> assessments = new ArrayList<>();
+            DataSnapshot assessmentsSnapshot = snapshot.child("Assessments");
+            for (DataSnapshot categorySnapshot : assessmentsSnapshot.getChildren()) {
+                AssessmentCategory category = AssessmentCategory.fromFirebaseSnapshot(categorySnapshot);
+                if (category != null) {
+                    assessments.add(category);
+                }
+            }
+            subject.setAssessments(assessments.isEmpty() ? null : assessments);
 
             // Validation: Cần có ít nhất ID và code
             if (subject.getId() == null || subject.getSubjectCode() == null) {
