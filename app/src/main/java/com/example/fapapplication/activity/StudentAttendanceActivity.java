@@ -91,9 +91,73 @@ public class StudentAttendanceActivity extends AppCompatActivity {
             studentId = prefs.getString("studentId", "");
         }
 
+        // OPTION 3: Lấy từ Firebase Auth - lấy UID và tìm trong Realtime Database
         if (studentId == null || studentId.isEmpty()) {
-            studentId = "he170188"; // Test
-            android.util.Log.w("StudentAttendance", "Using fallback test studentId");
+            com.google.firebase.auth.FirebaseUser currentUser = com.google.firebase.auth.FirebaseAuth.getInstance().getCurrentUser();
+            if (currentUser != null) {
+                String userUid = currentUser.getUid();
+                android.util.Log.d("StudentAttendance", "Getting studentId from Firebase Auth UID: " + userUid);
+                
+                // Tìm user trong Realtime Database bằng UID
+                realtimeDb.child("Users").child(userUid)
+                        .addListenerForSingleValueEvent(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(DataSnapshot dataSnapshot) {
+                                if (dataSnapshot.exists()) {
+                                    String studentIdFromDb = dataSnapshot.child("StudentId").getValue(String.class);
+                                    if (studentIdFromDb != null && !studentIdFromDb.isEmpty()) {
+                                        studentId = studentIdFromDb.toLowerCase(); // Đảm bảo lowercase
+                                        android.util.Log.d("StudentAttendance", "Found StudentId from DB: " + studentId);
+                                        // Sau khi có studentId, load lại dữ liệu
+                                        loadStudentFromRealtimeDatabase();
+                                    } else {
+                                        android.util.Log.w("StudentAttendance", "StudentId not found in user data");
+                                        // Fallback: thử lấy từ email
+                                        String email = currentUser.getEmail();
+                                        if (email != null && email.contains("@")) {
+                                            studentId = email.split("@")[0].toLowerCase();
+                                            android.util.Log.d("StudentAttendance", "Using email prefix as studentId: " + studentId);
+                                            loadStudentFromRealtimeDatabase();
+                                        } else {
+                                            showLoading(false);
+                                            Toast.makeText(StudentAttendanceActivity.this, "Cannot find student information", Toast.LENGTH_LONG).show();
+                                        }
+                                    }
+                                } else {
+                                    android.util.Log.w("StudentAttendance", "User not found in Realtime Database");
+                                    // Fallback: thử lấy từ email
+                                    String email = currentUser.getEmail();
+                                    if (email != null && email.contains("@")) {
+                                        studentId = email.split("@")[0].toLowerCase();
+                                        android.util.Log.d("StudentAttendance", "Using email prefix as studentId: " + studentId);
+                                        loadStudentFromRealtimeDatabase();
+                                    } else {
+                                        showLoading(false);
+                                        Toast.makeText(StudentAttendanceActivity.this, "Cannot find student information", Toast.LENGTH_LONG).show();
+                                    }
+                                }
+                            }
+
+                            @Override
+                            public void onCancelled(DatabaseError databaseError) {
+                                android.util.Log.e("StudentAttendance", "Error getting user data: " + databaseError.getMessage());
+                                // Fallback: thử lấy từ email
+                                com.google.firebase.auth.FirebaseUser currentUser = com.google.firebase.auth.FirebaseAuth.getInstance().getCurrentUser();
+                                if (currentUser != null) {
+                                    String email = currentUser.getEmail();
+                                    if (email != null && email.contains("@")) {
+                                        studentId = email.split("@")[0].toLowerCase();
+                                        android.util.Log.d("StudentAttendance", "Using email prefix as studentId: " + studentId);
+                                        loadStudentFromRealtimeDatabase();
+                                    } else {
+                                        showLoading(false);
+                                        Toast.makeText(StudentAttendanceActivity.this, "Cannot find student information", Toast.LENGTH_LONG).show();
+                                    }
+                                }
+                            }
+                        });
+                return; // Return sớm vì đang load async
+            }
         }
 
         android.util.Log.d("StudentAttendance", "Final studentId: " + studentId);

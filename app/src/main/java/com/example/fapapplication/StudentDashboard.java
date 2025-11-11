@@ -14,6 +14,10 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import com.example.fapapplication.activity.CurriculumActivity;
+import com.example.fapapplication.activity.StudentAttendanceActivity;
+import com.example.fapapplication.activity.SelectSubjectClassActivity;
+import com.example.fapapplication.activity.SelectSubjectClassAttendanceActivity;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
@@ -29,6 +33,9 @@ public class StudentDashboard extends AppCompatActivity {
 
     // Khai báo các CardView để bắt sự kiện click
     private CardView cardNotification, cardAppStatus, cardTimetable, cardExamSchedule, cardSemesterSchedule;
+    private CardView cardAttendanceReport, cardMarkReport, cardCurriculumReport;
+
+
 
     // Firebase và Google Auth
     private FirebaseAuth auth;
@@ -70,6 +77,9 @@ public class StudentDashboard extends AppCompatActivity {
         // cardNotification = findViewById(R.id.cardNotification);
         // cardAppStatus = findViewById(R.id.cardAppStatus);
         // ... (làm tương tự cho các card khác)
+        cardAttendanceReport = findViewById(R.id.cardAttendanceReport);
+        cardMarkReport = findViewById(R.id.cardMarkReport);
+        cardCurriculumReport = findViewById(R.id.cardCurriculumReport);
     }
 
     private void setupClickListeners() {
@@ -99,6 +109,30 @@ public class StudentDashboard extends AppCompatActivity {
         cardNotification.setOnClickListener(v -> showToast("Notification Card Clicked"));
         cardAppStatus.setOnClickListener(v -> showToast("Application Status Card Clicked"));
         */
+        if (cardAttendanceReport != null) {
+            cardAttendanceReport.setClickable(true);
+            cardAttendanceReport.setFocusable(true);
+            cardAttendanceReport.setOnClickListener(v -> {
+                startActivity(new Intent(StudentDashboard.this, StudentAttendanceActivity.class));
+            });
+        }
+
+        if (cardMarkReport != null) {
+            cardMarkReport.setClickable(true);
+            cardMarkReport.setFocusable(true);
+            cardMarkReport.setOnClickListener(v -> {
+                showToast("Mark Report clicked");
+            });
+        }
+
+        if (cardCurriculumReport != null) {
+            cardCurriculumReport.setClickable(true);
+            cardCurriculumReport.setFocusable(true);
+            cardCurriculumReport.setOnClickListener(v -> {
+                startActivity(new Intent(StudentDashboard.this, CurriculumActivity.class));
+            });
+        }
+
     }
 
     // Hiển thị một PopupMenu khi người dùng nhấn vào nút menu

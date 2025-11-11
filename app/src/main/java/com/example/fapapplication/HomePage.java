@@ -107,19 +107,36 @@ public class HomePage extends AppCompatActivity {
         cardAppStatus.setOnClickListener(v -> showToast("Application Status Card Clicked"));
         */
         if (cardAttendanceReport != null) {
-            cardAttendanceReport.setOnClickListener(v ->
-                    startActivity(new Intent(HomePage.this, StudentAttendanceActivity.class))
-            );
+            cardAttendanceReport.setClickable(true);
+            cardAttendanceReport.setFocusable(true);
+            cardAttendanceReport.setOnClickListener(v -> {
+                android.util.Log.d("HomePage", "Attendance Report clicked");
+                startActivity(new Intent(HomePage.this, StudentAttendanceActivity.class));
+            });
+        } else {
+            android.util.Log.e("HomePage", "cardAttendanceReport is null in setupClickListeners!");
         }
+        
         if (cardMarkReport != null) {
-            cardMarkReport.setOnClickListener(v ->
-                    showToast("Mark Report clicked")
-            );
+            cardMarkReport.setClickable(true);
+            cardMarkReport.setFocusable(true);
+            cardMarkReport.setOnClickListener(v -> {
+                android.util.Log.d("HomePage", "Mark Report clicked");
+                showToast("Mark Report clicked");
+            });
+        } else {
+            android.util.Log.e("HomePage", "cardMarkReport is null in setupClickListeners!");
         }
+        
         if (cardCurriculumReport != null) {
-            cardCurriculumReport.setOnClickListener(v ->
-                    startActivity(new Intent(HomePage.this, CurriculumActivity.class))
-            );
+            cardCurriculumReport.setClickable(true);
+            cardCurriculumReport.setFocusable(true);
+            cardCurriculumReport.setOnClickListener(v -> {
+                android.util.Log.d("HomePage", "Curriculum clicked");
+                startActivity(new Intent(HomePage.this, CurriculumActivity.class));
+            });
+        } else {
+            android.util.Log.e("HomePage", "cardCurriculumReport is null in setupClickListeners!");
         }
     }
 
