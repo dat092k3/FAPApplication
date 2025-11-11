@@ -45,6 +45,9 @@
             android:name=".LoginFeidPage"
             android:exported="false" />
         <activity
+          android:name=".SignUpActivity"
+          android:exported="false" />
+        <activity
             android:name=".LoginPage"
             android:exported="true">
             <intent-filter>
