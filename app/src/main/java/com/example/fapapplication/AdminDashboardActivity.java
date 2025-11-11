@@ -98,8 +98,8 @@ public class AdminDashboardActivity extends AppCompatActivity {
         cardAccountManagement.setOnClickListener(v -> startActivity(new Intent(this, AccountListActivity.class)));
         cardSubjectManagement.setOnClickListener(v -> startActivity(new Intent(this, SubjectListActivity.class)));
         cardClassManagement.setOnClickListener(v -> startActivity(new Intent(this, ClassListActivity.class)));
-        cardStatistic.setOnClickListener(v -> startActivity(new Intent(this, AdminStatisticActivity.class)));
-        cardNotification.setOnClickListener(v -> startActivity(new Intent(this, AdminNotificationActivity.class)));
+//        cardStatistic.setOnClickListener(v -> startActivity(new Intent(this, AdminStatisticActivity.class)));
+//        cardNotification.setOnClickListener(v -> startActivity(new Intent(this, AdminNotificationActivity.class)));
     }
 
     /**
