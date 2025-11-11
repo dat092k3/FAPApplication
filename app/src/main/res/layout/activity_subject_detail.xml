@@ -1,0 +1,333 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
+  xmlns:tools="http://schemas.android.com/tools"
+  android:layout_width="match_parent"
+  android:layout_height="match_parent"
+  android:background="#F5F5F5"
+  tools:context=".SubjectDetailActivity">
+
+  <!-- Header với back button và title -->
+  <LinearLayout
+    android:id="@+id/headerLayout"
+    android:layout_width="match_parent"
+    android:layout_height="120dp"
+    android:background="#FFC107"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:padding="16dp"
+    app:layout_constraintTop_toTopOf="parent">
+
+    <ImageButton
+      android:id="@+id/backButton"
+      android:layout_width="40dp"
+      android:layout_height="40dp"
+      android:background="?attr/selectableItemBackgroundBorderless"
+      android:contentDescription="Back"
+      android:src="@drawable/ic_back"
+      app:tint="#23437B" />
+
+    <TextView
+      android:id="@+id/tvTitle"
+      android:layout_width="0dp"
+      android:layout_height="wrap_content"
+      android:layout_marginStart="16dp"
+      android:layout_weight="1"
+      android:text="Subject Details"
+      android:textColor="#23437B"
+      android:textSize="24sp"
+      android:textStyle="bold" />
+  </LinearLayout>
+
+  <!-- Loading indicator -->
+  <ProgressBar
+    android:id="@+id/progressBar"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:visibility="gone"
+    app:layout_constraintBottom_toBottomOf="parent"
+    app:layout_constraintEnd_toEndOf="parent"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintTop_toBottomOf="@id/headerLayout" />
+
+  <!-- Error message -->
+  <TextView
+    android:id="@+id/tvError"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:text="Error loading subject"
+    android:textColor="@android:color/holo_red_dark"
+    android:textSize="16sp"
+    android:gravity="center"
+    android:visibility="gone"
+    app:layout_constraintBottom_toBottomOf="parent"
+    app:layout_constraintEnd_toEndOf="parent"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintTop_toBottomOf="@id/headerLayout" />
+
+  <!-- ScrollView cho form -->
+  <ScrollView
+    android:id="@+id/scrollView"
+    android:layout_width="0dp"
+    android:layout_height="0dp"
+    android:fillViewport="true"
+    app:layout_constraintBottom_toTopOf="@id/buttonContainer"
+    app:layout_constraintEnd_toEndOf="parent"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintTop_toBottomOf="@id/headerLayout">
+
+    <LinearLayout
+      android:id="@+id/formContainer"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:orientation="vertical"
+      android:padding="16dp">
+
+      <!-- Subject Info Card -->
+      <androidx.cardview.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        app:cardCornerRadius="10dp"
+        app:cardElevation="4dp">
+
+        <LinearLayout
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:orientation="vertical"
+          android:padding="16dp">
+
+          <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Thông tin môn học"
+            android:textColor="#23437B"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="16dp" />
+
+          <!-- Subject Code -->
+          <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Mã môn học"
+            android:textColor="#666666"
+            android:textSize="14sp"
+            android:layout_marginBottom="4dp" />
+
+          <EditText
+            android:id="@+id/etSubjectCode"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/edit_text_background"
+            android:hint="VD: PRM392"
+            android:inputType="textCapCharacters"
+            android:padding="12dp"
+            android:textSize="16sp"
+            android:layout_marginBottom="16dp" />
+
+          <!-- Subject Name -->
+          <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Tên môn học"
+            android:textColor="#666666"
+            android:textSize="14sp"
+            android:layout_marginBottom="4dp" />
+
+          <EditText
+            android:id="@+id/etSubjectName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/edit_text_background"
+            android:hint="VD: Mobile Programming"
+            android:inputType="textCapWords"
+            android:padding="12dp"
+            android:textSize="16sp"
+            android:layout_marginBottom="16dp" />
+
+          <!-- Description -->
+          <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Mô tả"
+            android:textColor="#666666"
+            android:textSize="14sp"
+            android:layout_marginBottom="4dp" />
+
+          <EditText
+            android:id="@+id/etDescription"
+            android:layout_width="match_parent"
+            android:layout_height="120dp"
+            android:background="@drawable/edit_text_background"
+            android:gravity="top|start"
+            android:hint="Nhập mô tả môn học..."
+            android:inputType="textMultiLine"
+            android:padding="12dp"
+            android:textSize="16sp"
+            android:layout_marginBottom="16dp" />
+
+          <!-- Active Status -->
+          <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <TextView
+              android:layout_width="0dp"
+              android:layout_height="wrap_content"
+              android:layout_weight="1"
+              android:text="Trạng thái kích hoạt"
+              android:textColor="#666666"
+              android:textSize="14sp" />
+
+            <androidx.appcompat.widget.SwitchCompat
+              android:id="@+id/switchActive"
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:checked="true" />
+          </LinearLayout>
+
+        </LinearLayout>
+      </androidx.cardview.widget.CardView>
+
+      <!-- Assessment Structure Card -->
+      <androidx.cardview.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        app:cardCornerRadius="10dp"
+        app:cardElevation="4dp">
+
+        <LinearLayout
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:orientation="vertical"
+          android:padding="16dp">
+
+          <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="16dp">
+
+            <TextView
+              android:layout_width="0dp"
+              android:layout_height="wrap_content"
+              android:layout_weight="1"
+              android:text="Cấu trúc đánh giá"
+              android:textColor="#23437B"
+              android:textSize="18sp"
+              android:textStyle="bold" />
+
+            <Button
+              android:id="@+id/btnAddCategory"
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:text="+ Thêm danh mục"
+              android:textSize="12sp"
+              android:backgroundTint="#4CAF50" />
+          </LinearLayout>
+
+          <!-- RecyclerView cho assessment categories -->
+          <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerViewAssessments"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:nestedScrollingEnabled="false"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
+
+          <!-- Total weight display -->
+          <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginTop="16dp"
+            android:padding="12dp"
+            android:background="@drawable/rounded_background">
+
+            <TextView
+              android:layout_width="0dp"
+              android:layout_height="wrap_content"
+              android:layout_weight="1"
+              android:text="Tổng trọng số:"
+              android:textColor="#23437B"
+              android:textSize="16sp"
+              android:textStyle="bold" />
+
+            <TextView
+              android:id="@+id/tvTotalWeight"
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:text="0%"
+              android:textColor="#23437B"
+              android:textSize="18sp"
+              android:textStyle="bold" />
+          </LinearLayout>
+
+          <TextView
+            android:id="@+id/tvWeightError"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="⚠ Tổng trọng số phải bằng 100%"
+            android:textColor="@android:color/holo_red_dark"
+            android:textSize="14sp"
+            android:layout_marginTop="8dp"
+            android:visibility="gone" />
+
+        </LinearLayout>
+      </androidx.cardview.widget.CardView>
+
+      <!-- Created At info -->
+      <TextView
+        android:id="@+id/tvCreatedAt"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Ngày tạo: 01/01/2024"
+        android:textColor="#999999"
+        android:textSize="12sp"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="80dp" />
+
+    </LinearLayout>
+  </ScrollView>
+
+  <!-- Button Container -->
+  <LinearLayout
+    android:id="@+id/buttonContainer"
+    android:layout_width="0dp"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:padding="16dp"
+    android:background="#FFFFFF"
+    android:elevation="4dp"
+    app:layout_constraintBottom_toBottomOf="parent"
+    app:layout_constraintEnd_toEndOf="parent"
+    app:layout_constraintStart_toStartOf="parent">
+
+    <Button
+      android:id="@+id/btnCancel"
+      android:layout_width="0dp"
+      android:layout_height="wrap_content"
+      android:layout_weight="1"
+      android:layout_marginEnd="8dp"
+      android:text="Hủy"
+      android:textColor="#23437B"
+      android:background="@drawable/button_outline" />
+
+    <Button
+      android:id="@+id/btnSave"
+      android:layout_width="0dp"
+      android:layout_height="wrap_content"
+      android:layout_weight="1"
+      android:layout_marginStart="8dp"
+      android:text="Lưu"
+      android:textColor="#FFFFFF"
+      android:background="@drawable/button_yellow" />
+
+  </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

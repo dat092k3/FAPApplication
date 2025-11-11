@@ -12,17 +12,18 @@
       android:supportsRtl="true"
       android:theme="@style/Theme.FAPApplication">
         <activity
-            android:exported="true"
-            android:name=".AdminNotificationActivity" />
+          android:exported="false"
+          android:name=".SubjectDetailActivity" />
         <activity
-            android:exported="true"
-            android:name=".AdminStatisticActivity" />
-
+          android:exported="true"
+          android:name=".AdminNotificationActivity" />
+        <activity
+          android:exported="true"
+          android:name=".AdminStatisticActivity" />
         <activity
           android:exported="false"
           android:name=".AccountDetailActivity" />
-        <activity
-          android:name=".CreateAccountActivity" />
+        <activity android:name=".CreateAccountActivity" />
         <activity
           android:exported="false"
           android:name=".NotificationDetailActivity" />
@@ -60,23 +61,23 @@
           android:exported="false"
           android:name=".NotificationActivity" />
         <activity
-            android:name=".activity.SelectSubjectClassAttendanceActivity"
-            android:exported="true" />
-        <activity
-            android:name=".activity.SelectSubjectClassActivity"
-            android:exported="true" />
-        <activity
-            android:name=".activity.CurriculumActivity"
-            android:exported="false" />
-        <activity
-            android:name=".activity.StudentAttendanceActivity"
-            android:exported="true" />
-        <activity
-            android:name=".activity.TeacherInputGradesActivity"
-            android:exported="true" />
+          android:exported="true"
+          android:name=".activity.SelectSubjectClassAttendanceActivity" />
         <activity
           android:exported="true"
-          android:name=".LoginPage">
+          android:name=".activity.SelectSubjectClassActivity" />
+        <activity
+          android:exported="false"
+          android:name=".activity.CurriculumActivity" />
+        <activity
+          android:exported="true"
+          android:name=".activity.StudentAttendanceActivity" />
+        <activity
+          android:exported="true"
+          android:name=".activity.TeacherInputGradesActivity" />
+        <activity
+          android:name=".LoginPage"
+          android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

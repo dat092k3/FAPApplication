@@ -56,7 +56,7 @@ public class SubjectListActivity extends AppCompatActivity {
     private String currentSearchQuery = "";
     private String currentStatusFilter = "All";
 
-    private static final int REQUEST_CODE_SUBJECT_DETAIL = 2001;
+    private static final int REQUEST_CODE_SUBJECT_DETAIL = 102;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -111,8 +111,7 @@ public class SubjectListActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
 
         if (requestCode == REQUEST_CODE_SUBJECT_DETAIL && resultCode == RESULT_OK) {
-            // Subject was updated, refresh the list
-            Toast.makeText(this, "Subject updated successfully", Toast.LENGTH_SHORT).show();
+            // Refresh danh sách sau khi edit
             refreshData();
         }
     }
@@ -147,12 +146,9 @@ public class SubjectListActivity extends AppCompatActivity {
 
         // Thiết lập click listener cho items
         adapter.setOnSubjectClickListener((subject, position) -> {
-            // TODO: Navigate to Subject Detail screen (Task 9)
-            Toast.makeText(this, "View subject: " + subject.getSubjectName(), Toast.LENGTH_SHORT).show();
-            // Intent intent = new Intent(SubjectListActivity.this, SubjectDetailActivity.class);
-            // intent.putExtra("SUBJECT_ID", subject.getId());
-            // startActivityForResult(intent, REQUEST_CODE_SUBJECT_DETAIL);
-            // overridePendingTransition(android.R.anim.slide_in_left, android.R.anim.slide_out_right);
+            Intent intent = new Intent(SubjectListActivity.this, SubjectDetailActivity.class);
+            intent.putExtra("SUBJECT_ID", subject.getId());
+            startActivityForResult(intent, REQUEST_CODE_SUBJECT_DETAIL);
         });
 
         // Thiết lập long-click listener cho context menu
