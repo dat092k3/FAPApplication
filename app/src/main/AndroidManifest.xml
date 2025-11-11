@@ -57,6 +57,23 @@
             </intent-filter>
         </activity>
         <activity
+            android:name=".activity.SelectSubjectClassAttendanceActivity"
+            android:exported="true" />
+        <activity
+            android:name=".activity.SelectSubjectClassActivity"
+            android:exported="true" />
+        <activity
+            android:name=".activity.CurriculumActivity"
+            android:exported="false" />
+        <activity
+            android:name=".activity.StudentAttendanceActivity"
+            android:exported="true" />
+        <activity
+            android:name=".activity.TeacherInputGradesActivity"
+            android:exported="true" />
+
+
+        <activity
           android:exported="true"
           android:name=".LoginPage">
             <intent-filter>
