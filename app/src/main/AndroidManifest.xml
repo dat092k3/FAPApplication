@@ -13,6 +13,9 @@
       android:theme="@style/Theme.FAPApplication">
         <activity
           android:exported="false"
+          android:name=".AccountDetailActivity" />
+        <activity
+          android:exported="false"
           android:name=".CreateAccountActivity" />
         <activity
           android:exported="false"

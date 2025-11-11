@@ -643,7 +643,7 @@ public class AccountDetailActivity extends AppCompatActivity {
 
             // User info
             tvUserId.setText("ID: " + user.getId());
-            tvCreatedAt.setText("Created: " + formatTimestamp(user.getCreatedAt()));
+            tvCreatedAt.setText("Created: " + formatTimestamp(user.getCreatedAt() != null ? user.getCreatedAt() : 0L));
 
             // Form fields
             etFullName.setText(user.getName());
@@ -703,9 +703,10 @@ public class AccountDetailActivity extends AppCompatActivity {
 
     /**
      * Format timestamp thành date string
+     * Handles null and zero values safely
      */
-    private String formatTimestamp(long timestamp) {
-        if (timestamp == 0) return "Unknown";
+    private String formatTimestamp(Long timestamp) {
+        if (timestamp == null || timestamp == 0) return "Unknown";
 
         try {
             SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault());
