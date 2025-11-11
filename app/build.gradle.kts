@@ -78,6 +78,10 @@ dependencies {
     }
 
 
+    // Rich text editor
+    implementation("com.github.wasabeef:richeditor-android:2.0.0")
+
+
     // Testing
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
