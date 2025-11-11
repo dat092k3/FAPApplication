@@ -103,6 +103,35 @@ public class SubjectRepository {
     }
 
     /**
+     * Fetch tất cả subjects từ Firebase (one-time, không realtime)
+     * Useful cho swipe-to-refresh functionality
+     *
+     * @param callback Callback để xử lý kết quả
+     */
+    public void getAllSubjectsOnce(@NonNull SubjectListCallback callback) {
+        subjectsRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                List<Subject> subjects = new ArrayList<>();
+
+                for (DataSnapshot subjectSnapshot : dataSnapshot.getChildren()) {
+                    Subject subject = Subject.fromFirebaseSnapshot(subjectSnapshot);
+                    if (subject != null) {
+                        subjects.add(subject);
+                    }
+                }
+
+                callback.onSuccess(subjects);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                callback.onError("Error fetching subjects: " + databaseError.getMessage());
+            }
+        });
+    }
+
+    /**
      * Fetch tất cả active subjects từ Firebase
      * Chỉ lấy các subjects có IsActive = true
      *
