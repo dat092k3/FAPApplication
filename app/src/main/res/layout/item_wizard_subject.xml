@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
+  android:layout_width="match_parent"
+  android:layout_height="wrap_content"
+  android:layout_margin="8dp"
+  app:cardCornerRadius="8dp"
+  app:cardElevation="2dp">
+
+  <LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <!-- Subject Code & Name -->
+    <TextView
+      android:id="@+id/tvSubjectName"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:text="PRM392 - Mobile Programming"
+      android:textColor="#23437B"
+      android:textSize="16sp"
+      android:textStyle="bold" />
+
+    <!-- Teacher -->
+    <TextView
+      android:id="@+id/tvTeacher"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_marginTop="4dp"
+      android:text="Teacher: John Doe"
+      android:textColor="#666666"
+      android:textSize="14sp" />
+
+    <!-- Schedule -->
+    <TextView
+      android:id="@+id/tvSchedule"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_marginTop="2dp"
+      android:text="Schedule: Mon 7:30-9:30"
+      android:textColor="#666666"
+      android:textSize="14sp" />
+
+    <!-- Room -->
+    <TextView
+      android:id="@+id/tvRoom"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_marginTop="2dp"
+      android:text="Room: 301-DE"
+      android:textColor="#666666"
+      android:textSize="14sp" />
+
+    <!-- Remove Button -->
+    <Button
+      android:id="@+id/btnRemove"
+      android:layout_width="wrap_content"
+      android:layout_height="36dp"
+      android:layout_gravity="end"
+      android:layout_marginTop="8dp"
+      android:background="@drawable/button_outline"
+      android:backgroundTint="#D32F2F"
+      android:minWidth="80dp"
+      android:text="Remove"
+      android:textAllCaps="false"
+      android:textColor="#D32F2F"
+      android:textSize="14sp" />
+
+  </LinearLayout>
+
+</androidx.cardview.widget.CardView>

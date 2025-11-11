@@ -61,7 +61,7 @@ public class ClassListActivity extends AppCompatActivity {
     private String currentStatusFilter = "All";
 
     private static final int REQUEST_CODE_CLASS_DETAIL = 201;
-    private static final int REQUEST_CODE_CREATE_CLASS = 202;
+    private static final int REQUEST_CODE_CREATE_CLASS = 2001;
 
     // State preservation keys
     private static final String KEY_SEARCH_QUERY = "search_query";
@@ -232,8 +232,8 @@ public class ClassListActivity extends AppCompatActivity {
 
         // Floating Action Button - Tạo class mới
         fabAddClass.setOnClickListener(v -> {
-            Toast.makeText(this, "Create class coming soon", Toast.LENGTH_SHORT).show();
-            // TODO: Navigate to Create Class screen (Task 14)
+            Intent intent = new Intent(ClassListActivity.this, CreateClassActivity.class);
+            startActivityForResult(intent, REQUEST_CODE_CREATE_CLASS);
         });
 
         // Swipe to refresh

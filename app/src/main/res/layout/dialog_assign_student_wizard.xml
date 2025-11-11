@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+  android:layout_width="match_parent"
+  android:layout_height="wrap_content"
+  android:fillViewport="true">
+
+  <LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="24dp">
+
+    <TextView
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_marginBottom="20dp"
+      android:text="Gán Sinh Viên Vào Môn Học"
+      android:textColor="#23437B"
+      android:textSize="20sp"
+      android:textStyle="bold" />
+
+    <!-- Student Selection -->
+    <TextView
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:text="Sinh Viên *"
+      android:textColor="#666666"
+      android:textSize="14sp" />
+
+    <Spinner
+      android:id="@+id/spinnerStudent"
+      android:layout_width="match_parent"
+      android:layout_height="48dp"
+      android:layout_marginBottom="16dp"
+      android:background="@drawable/spinner_background"
+      android:padding="12dp" />
+
+    <!-- Subject Selection (Multiple) -->
+    <TextView
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:text="Chọn Môn Học *"
+      android:textColor="#666666"
+      android:textSize="14sp" />
+
+    <TextView
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_marginBottom="8dp"
+      android:text="Select one or more subjects"
+      android:textColor="#999999"
+      android:textSize="12sp" />
+
+    <LinearLayout
+      android:id="@+id/subjectsContainer"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:layout_marginBottom="16dp"
+      android:background="@drawable/edit_text_background"
+      android:orientation="vertical"
+      android:padding="12dp">
+
+      <!-- Checkboxes will be added dynamically here -->
+
+    </LinearLayout>
+
+    <!-- IsActive Switch -->
+    <LinearLayout
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:layout_marginBottom="20dp"
+      android:gravity="center_vertical"
+      android:orientation="horizontal">
+
+      <TextView
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:text="Kích hoạt"
+        android:textColor="#333333"
+        android:textSize="16sp" />
+
+      <androidx.appcompat.widget.SwitchCompat
+        android:id="@+id/switchActive"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:checked="true" />
+
+    </LinearLayout>
+
+    <!-- Buttons -->
+    <LinearLayout
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:orientation="horizontal">
+
+      <Button
+        android:id="@+id/btnCancel"
+        android:layout_width="0dp"
+        android:layout_height="56dp"
+        android:layout_marginEnd="8dp"
+        android:layout_weight="1"
+        android:background="@drawable/button_outline"
+        android:text="Hủy"
+        android:textColor="#23437B"
+        android:textSize="16sp" />
+
+      <Button
+        android:id="@+id/btnSave"
+        android:layout_width="0dp"
+        android:layout_height="56dp"
+        android:layout_marginStart="8dp"
+        android:layout_weight="1"
+        android:background="@drawable/button_primary"
+        android:text="Gán"
+        android:textColor="#FFFFFF"
+        android:textSize="16sp" />
+
+    </LinearLayout>
+
+  </LinearLayout>
+
+</ScrollView>

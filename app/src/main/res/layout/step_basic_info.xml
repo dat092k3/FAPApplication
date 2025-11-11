@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+  android:layout_width="match_parent"
+  android:layout_height="match_parent"
+  android:fillViewport="true"
+  android:padding="16dp">
+
+  <LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <TextView
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_marginBottom="8dp"
+      android:text="Basic Class Information"
+      android:textColor="#23437B"
+      android:textSize="18sp"
+      android:textStyle="bold" />
+
+    <TextView
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_marginBottom="20dp"
+      android:text="Enter the basic details for the new class"
+      android:textColor="#666666"
+      android:textSize="14sp" />
+
+    <!-- Class Name -->
+    <TextView
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:text="Tên Lớp *"
+      android:textColor="#666666"
+      android:textSize="14sp" />
+
+    <EditText
+      android:id="@+id/etClassName"
+      android:layout_width="match_parent"
+      android:layout_height="56dp"
+      android:layout_marginBottom="16dp"
+      android:background="@drawable/edit_text_background"
+      android:hint="Nhập tên lớp (VD: SE1856)"
+      android:inputType="text"
+      android:padding="16dp"
+      android:textColor="#333333"
+      android:textSize="16sp" />
+
+    <!-- Semester -->
+    <TextView
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:text="Học Kỳ *"
+      android:textColor="#666666"
+      android:textSize="14sp" />
+
+    <EditText
+      android:id="@+id/etSemester"
+      android:layout_width="match_parent"
+      android:layout_height="56dp"
+      android:layout_marginBottom="16dp"
+      android:background="@drawable/edit_text_background"
+      android:hint="Nhập học kỳ (VD: FALL2024)"
+      android:inputType="text"
+      android:padding="16dp"
+      android:textColor="#333333"
+      android:textSize="16sp" />
+
+    <!-- Description -->
+    <TextView
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:text="Mô Tả"
+      android:textColor="#666666"
+      android:textSize="14sp" />
+
+    <EditText
+      android:id="@+id/etDescription"
+      android:layout_width="match_parent"
+      android:layout_height="120dp"
+      android:layout_marginBottom="16dp"
+      android:background="@drawable/edit_text_background"
+      android:gravity="top|start"
+      android:hint="Nhập mô tả (tùy chọn)"
+      android:inputType="textMultiLine"
+      android:padding="16dp"
+      android:textColor="#333333"
+      android:textSize="16sp" />
+
+    <!-- IsActive Toggle -->
+    <LinearLayout
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:layout_marginBottom="16dp"
+      android:background="@drawable/card_background"
+      android:elevation="2dp"
+      android:gravity="center_vertical"
+      android:orientation="horizontal"
+      android:padding="16dp">
+
+      <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <TextView
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:text="Trạng Thái"
+          android:textColor="#333333"
+          android:textSize="16sp"
+          android:textStyle="bold" />
+
+        <TextView
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:layout_marginTop="4dp"
+          android:text="Kích hoạt lớp học ngay"
+          android:textColor="#666666"
+          android:textSize="14sp" />
+      </LinearLayout>
+
+      <androidx.appcompat.widget.SwitchCompat
+        android:id="@+id/switchActive"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:checked="true" />
+
+    </LinearLayout>
+
+    <!-- Info Note -->
+    <LinearLayout
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:background="#E3F2FD"
+      android:orientation="vertical"
+      android:padding="12dp">
+
+      <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="📝 Note:"
+        android:textColor="#1976D2"
+        android:textSize="14sp"
+        android:textStyle="bold" />
+
+      <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:text="Class ID will be automatically generated as: ClassName_Semester (e.g., SE1856_FALL2024)"
+        android:textColor="#1976D2"
+        android:textSize="12sp" />
+
+      <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="You can skip Steps 2 and 3 and add subjects/students later from the Class Detail screen."
+        android:textColor="#1976D2"
+        android:textSize="12sp" />
+    </LinearLayout>
+
+  </LinearLayout>
+
+</ScrollView>

@@ -2,94 +2,97 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
   xmlns:tools="http://schemas.android.com/tools">
 
-    <application
-      android:allowBackup="true"
-      android:dataExtractionRules="@xml/data_extraction_rules"
-      android:fullBackupContent="@xml/backup_rules"
-      android:icon="@mipmap/ic_launcher"
-      android:label="@string/app_name"
-      android:roundIcon="@mipmap/ic_launcher_round"
-      android:supportsRtl="true"
-      android:theme="@style/Theme.FAPApplication">
-        <activity
-          android:exported="false"
-          android:name=".ClassDetailActivity" />
-        <activity
-          android:exported="false"
-          android:name=".CreateSubjectActivity" />
-        <activity
-          android:exported="false"
-          android:name=".SubjectDetailActivity" />
-        <activity
-          android:exported="true"
-          android:name=".AdminNotificationActivity" />
-        <activity
-          android:exported="true"
-          android:name=".AdminStatisticActivity" />
-        <activity
-          android:exported="false"
-          android:name=".AccountDetailActivity" />
-        <activity android:name=".CreateAccountActivity" />
-        <activity
-          android:exported="false"
-          android:name=".NotificationDetailActivity" />
-        <activity
-          android:exported="false"
-          android:name=".ClassListActivity" />
-        <activity
-          android:exported="false"
-          android:name=".SubjectListActivity" />
-        <activity
-          android:exported="false"
-          android:name=".AccountListActivity" />
-        <activity
-          android:exported="false"
-          android:name=".StudentDashboard" />
-        <activity
-          android:exported="false"
-          android:name=".TeacherDashboard" />
-        <activity
-          android:exported="true"
-          android:name=".AdminDashboardActivity" />
-        <activity
-          android:exported="true"
-          android:name=".activity.CheckAttendanceActivity" />
-        <activity
-          android:exported="false"
-          android:name=".LoginFeidPage" />
-        <activity
-          android:exported="true"
-          android:name=".HomePage" />
-        <activity
-          android:exported="false"
-          android:name=".SignUpActivity" />
-        <activity
-          android:exported="false"
-          android:name=".NotificationActivity" />
-        <activity
-          android:exported="true"
-          android:name=".activity.SelectSubjectClassAttendanceActivity" />
-        <activity
-          android:exported="true"
-          android:name=".activity.SelectSubjectClassActivity" />
-        <activity
-          android:exported="false"
-          android:name=".activity.CurriculumActivity" />
-        <activity
-          android:exported="true"
-          android:name=".activity.StudentAttendanceActivity" />
-        <activity
-          android:exported="true"
-          android:name=".activity.TeacherInputGradesActivity" />
-        <activity
-          android:name=".LoginPage"
-          android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
+  <application
+    android:allowBackup="true"
+    android:dataExtractionRules="@xml/data_extraction_rules"
+    android:fullBackupContent="@xml/backup_rules"
+    android:icon="@mipmap/ic_launcher"
+    android:label="@string/app_name"
+    android:roundIcon="@mipmap/ic_launcher_round"
+    android:supportsRtl="true"
+    android:theme="@style/Theme.FAPApplication">
+    <activity
+      android:exported="false"
+      android:name=".CreateClassActivity" />
+    <activity
+      android:exported="false"
+      android:name=".ClassDetailActivity" />
+    <activity
+      android:exported="false"
+      android:name=".CreateSubjectActivity" />
+    <activity
+      android:exported="false"
+      android:name=".SubjectDetailActivity" />
+    <activity
+      android:exported="true"
+      android:name=".AdminNotificationActivity" />
+    <activity
+      android:exported="true"
+      android:name=".AdminStatisticActivity" />
+    <activity
+      android:exported="false"
+      android:name=".AccountDetailActivity" />
+    <activity android:name=".CreateAccountActivity" />
+    <activity
+      android:exported="false"
+      android:name=".NotificationDetailActivity" />
+    <activity
+      android:exported="false"
+      android:name=".ClassListActivity" />
+    <activity
+      android:exported="false"
+      android:name=".SubjectListActivity" />
+    <activity
+      android:exported="false"
+      android:name=".AccountListActivity" />
+    <activity
+      android:exported="false"
+      android:name=".StudentDashboard" />
+    <activity
+      android:exported="false"
+      android:name=".TeacherDashboard" />
+    <activity
+      android:exported="true"
+      android:name=".AdminDashboardActivity" />
+    <activity
+      android:exported="true"
+      android:name=".activity.CheckAttendanceActivity" />
+    <activity
+      android:exported="false"
+      android:name=".LoginFeidPage" />
+    <activity
+      android:exported="true"
+      android:name=".HomePage" />
+    <activity
+      android:exported="false"
+      android:name=".SignUpActivity" />
+    <activity
+      android:exported="false"
+      android:name=".NotificationActivity" />
+    <activity
+      android:exported="true"
+      android:name=".activity.SelectSubjectClassAttendanceActivity" />
+    <activity
+      android:exported="true"
+      android:name=".activity.SelectSubjectClassActivity" />
+    <activity
+      android:exported="false"
+      android:name=".activity.CurriculumActivity" />
+    <activity
+      android:exported="true"
+      android:name=".activity.StudentAttendanceActivity" />
+    <activity
+      android:exported="true"
+      android:name=".activity.TeacherInputGradesActivity" />
+    <activity
+      android:exported="true"
+      android:name=".LoginPage">
+      <intent-filter>
+        <action android:name="android.intent.action.MAIN" />
 
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
-    </application>
+        <category android:name="android.intent.category.LAUNCHER" />
+      </intent-filter>
+    </activity>
+  </application>
 
 </manifest>

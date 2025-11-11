@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  android:layout_width="match_parent"
+  android:layout_height="match_parent"
+  android:orientation="vertical"
+  android:padding="16dp">
+
+  <TextView
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="8dp"
+    android:text="Assign Subjects to Class"
+    android:textColor="#23437B"
+    android:textSize="18sp"
+    android:textStyle="bold" />
+
+  <TextView
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="20dp"
+    android:text="Add subjects with teachers, schedules, and rooms (optional)"
+    android:textColor="#666666"
+    android:textSize="14sp" />
+
+  <!-- Empty State / List Container -->
+  <FrameLayout
+    android:layout_width="match_parent"
+    android:layout_height="0dp"
+    android:layout_weight="1">
+
+    <!-- Empty State -->
+    <LinearLayout
+      android:id="@+id/emptyStateLayout"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_gravity="center"
+      android:gravity="center"
+      android:orientation="vertical"
+      android:padding="32dp">
+
+      <ImageView
+        android:layout_width="64dp"
+        android:layout_height="64dp"
+        android:src="@android:drawable/ic_menu_agenda"
+        android:tint="#CCCCCC" />
+
+      <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="No Subjects Added Yet"
+        android:textColor="#666666"
+        android:textSize="16sp"
+        android:textStyle="bold" />
+
+      <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:gravity="center"
+        android:text="Click Add Subject below to assign subjects"
+        android:textColor="#999999"
+        android:textSize="14sp" />
+
+    </LinearLayout>
+
+    <!-- RecyclerView for Subjects -->
+    <androidx.recyclerview.widget.RecyclerView
+      android:id="@+id/recyclerViewSubjects"
+      android:layout_width="match_parent"
+      android:layout_height="match_parent"
+      android:visibility="gone" />
+
+  </FrameLayout>
+
+  <!-- Add Subject Button -->
+  <Button
+    android:id="@+id/btnAddSubject"
+    android:layout_width="match_parent"
+    android:layout_height="56dp"
+    android:layout_marginTop="16dp"
+    android:background="@drawable/button_outline"
+    android:drawableStart="@android:drawable/ic_input_add"
+    android:drawableTint="#FFC107"
+    android:gravity="center"
+    android:text="Add Subject"
+    android:textColor="#FFC107"
+    android:textSize="16sp" />
+
+</LinearLayout>

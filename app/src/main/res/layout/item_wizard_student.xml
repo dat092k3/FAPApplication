@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
+  android:layout_width="match_parent"
+  android:layout_height="wrap_content"
+  android:layout_margin="8dp"
+  app:cardCornerRadius="8dp"
+  app:cardElevation="2dp">
+
+  <LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <!-- Student Name -->
+    <TextView
+      android:id="@+id/tvStudentName"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:text="Nguyen Van A (HE170188)"
+      android:textColor="#23437B"
+      android:textSize="16sp"
+      android:textStyle="bold" />
+
+    <!-- Assigned Subjects -->
+    <TextView
+      android:id="@+id/tvAssignedSubjects"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_marginTop="4dp"
+      android:text="Subjects: PRM392, SWP391"
+      android:textColor="#666666"
+      android:textSize="14sp" />
+
+    <!-- Remove Button -->
+    <Button
+      android:id="@+id/btnRemove"
+      android:layout_width="wrap_content"
+      android:layout_height="36dp"
+      android:layout_gravity="end"
+      android:layout_marginTop="8dp"
+      android:background="@drawable/button_outline"
+      android:backgroundTint="#D32F2F"
+      android:minWidth="80dp"
+      android:text="Remove"
+      android:textAllCaps="false"
+      android:textColor="#D32F2F"
+      android:textSize="14sp" />
+
+  </LinearLayout>
+
+</androidx.cardview.widget.CardView>
