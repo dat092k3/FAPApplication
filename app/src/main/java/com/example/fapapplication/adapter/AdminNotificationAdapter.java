@@ -34,7 +34,7 @@ public class AdminNotificationAdapter extends RecyclerView.Adapter<AdminNotifica
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.item_notification, parent, false);
+                .inflate(R.layout.admin_item_notification, parent, false);
         return new ViewHolder(view);
     }
 
@@ -57,8 +57,8 @@ public class AdminNotificationAdapter extends RecyclerView.Adapter<AdminNotifica
         ImageButton btnEdit, btnDelete;
         public ViewHolder(View view) {
             super(view);
-            title = view.findViewById(R.id.titleInput);
-            message = view.findViewById(R.id.messageEditor);
+            title = view.findViewById(R.id.txtTitle);
+            message = view.findViewById(R.id.txtMessage);
             btnEdit = view.findViewById(R.id.btnEdit);
             btnDelete = view.findViewById(R.id.btnDelete);
         }

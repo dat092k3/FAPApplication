@@ -52,7 +52,7 @@ public class AdminNotificationActivity extends AppCompatActivity {
         btnAdd = findViewById(R.id.addNotificationBtn);
         dbRef = FirebaseDatabase.getInstance().getReference("Notifications");
 
-        loadNotifications();
+//        loadNotifications();
         notificationList.add(new Notification("Noti1","Title", "Message", 1111111));
 
         adapter = new AdminNotificationAdapter(notificationList, new AdminNotificationAdapter.OnItemClickListener() {

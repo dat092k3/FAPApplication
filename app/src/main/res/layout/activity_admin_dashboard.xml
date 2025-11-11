@@ -133,7 +133,7 @@
 
                     <!-- Card: Application Status -->
                     <androidx.cardview.widget.CardView
-                        android:id="@+id/cardApplicationStatus"
+                        android:id="@+id/cardNotification"
                         android:layout_width="0dp"
                         android:layout_height="140dp"
                         android:layout_marginStart="8dp"
