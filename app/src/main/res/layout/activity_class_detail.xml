@@ -22,7 +22,7 @@
       android:layout_height="40dp"
       android:background="?attr/selectableItemBackgroundBorderless"
       android:contentDescription="Back"
-      android:src="@drawable/ic_arrow_back"
+      android:src="@drawable/ic_back"
       android:tint="#23437B" />
 
     <TextView
@@ -31,7 +31,7 @@
       android:layout_height="wrap_content"
       android:layout_marginStart="16dp"
       android:layout_weight="1"
-      android:text="Chi Tiết Lớp Học"
+      android:text="Class Details"
       android:textColor="#23437B"
       android:textSize="24sp"
       android:textStyle="bold" />
@@ -61,203 +61,38 @@
     android:visibility="gone"
     app:layout_constraintTop_toBottomOf="@id/headerLayout" />
 
-  <!-- ScrollView cho form -->
-  <ScrollView
-    android:id="@+id/scrollView"
+  <!-- Tab Layout và ViewPager -->
+  <LinearLayout
+    android:id="@+id/tabContainer"
     android:layout_width="0dp"
     android:layout_height="0dp"
-    android:fillViewport="true"
+    android:orientation="vertical"
+    android:visibility="gone"
     app:layout_constraintBottom_toBottomOf="parent"
     app:layout_constraintEnd_toEndOf="parent"
     app:layout_constraintStart_toStartOf="parent"
     app:layout_constraintTop_toBottomOf="@id/headerLayout">
 
-    <LinearLayout
-      android:id="@+id/formContainer"
+    <!-- TabLayout -->
+    <com.google.android.material.tabs.TabLayout
+      android:id="@+id/tabLayout"
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
-      android:orientation="vertical"
-      android:padding="16dp">
+      android:background="@android:color/white"
+      android:elevation="4dp"
+      app:tabIndicatorColor="#FFC107"
+      app:tabSelectedTextColor="#23437B"
+      app:tabTextColor="#666666"
+      app:tabMode="fixed"
+      app:tabGravity="fill" />
 
-      <!-- Basic Information Card -->
-      <androidx.cardview.widget.CardView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="16dp"
-        app:cardCornerRadius="10dp"
-        app:cardElevation="4dp">
+    <!-- ViewPager2 -->
+    <androidx.viewpager2.widget.ViewPager2
+      android:id="@+id/viewPager"
+      android:layout_width="match_parent"
+      android:layout_height="0dp"
+      android:layout_weight="1" />
 
-        <LinearLayout
-          android:layout_width="match_parent"
-          android:layout_height="wrap_content"
-          android:orientation="vertical"
-          android:padding="16dp">
-
-          <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
-            android:text="Thông Tin Cơ Bản"
-            android:textColor="#23437B"
-            android:textSize="18sp"
-            android:textStyle="bold" />
-
-          <!-- Class Name -->
-          <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Tên Lớp *"
-            android:textColor="#666666"
-            android:textSize="14sp" />
-
-          <EditText
-            android:id="@+id/etClassName"
-            android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:layout_marginBottom="16dp"
-            android:background="@drawable/edit_text_background"
-            android:hint="Nhập tên lớp (VD: SE1856)"
-            android:inputType="textCapCharacters"
-            android:maxLength="20"
-            android:padding="12dp"
-            android:textSize="16sp" />
-
-          <!-- Semester -->
-          <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Học Kỳ *"
-            android:textColor="#666666"
-            android:textSize="14sp" />
-
-          <EditText
-            android:id="@+id/etSemester"
-            android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:layout_marginBottom="16dp"
-            android:background="@drawable/edit_text_background"
-            android:hint="Nhập học kỳ (VD: Fall 2024)"
-            android:inputType="text"
-            android:maxLength="50"
-            android:padding="12dp"
-            android:textSize="16sp" />
-
-          <!-- Description -->
-          <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Mô Tả"
-            android:textColor="#666666"
-            android:textSize="14sp" />
-
-          <EditText
-            android:id="@+id/etDescription"
-            android:layout_width="match_parent"
-            android:layout_height="80dp"
-            android:layout_marginBottom="8dp"
-            android:background="@drawable/edit_text_background"
-            android:gravity="top|start"
-            android:hint="Nhập mô tả lớp học (tùy chọn)"
-            android:inputType="textMultiLine"
-            android:maxLength="500"
-            android:padding="12dp"
-            android:textSize="16sp" />
-
-        </LinearLayout>
-      </androidx.cardview.widget.CardView>
-
-      <!-- Status Card -->
-      <androidx.cardview.widget.CardView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="16dp"
-        app:cardCornerRadius="10dp"
-        app:cardElevation="4dp">
-
-        <LinearLayout
-          android:layout_width="match_parent"
-          android:layout_height="wrap_content"
-          android:orientation="vertical"
-          android:padding="16dp">
-
-          <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="12dp"
-            android:text="Trạng Thái"
-            android:textColor="#23437B"
-            android:textSize="18sp"
-            android:textStyle="bold" />
-
-          <!-- Active Switch -->
-          <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center_vertical"
-            android:orientation="horizontal">
-
-            <TextView
-              android:layout_width="0dp"
-              android:layout_height="wrap_content"
-              android:layout_weight="1"
-              android:text="Kích hoạt lớp học"
-              android:textColor="#333333"
-              android:textSize="16sp" />
-
-            <androidx.appcompat.widget.SwitchCompat
-              android:id="@+id/switchActive"
-              android:layout_width="wrap_content"
-              android:layout_height="wrap_content" />
-
-          </LinearLayout>
-
-          <!-- Created Date -->
-          <TextView
-            android:id="@+id/tvCreatedAt"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:text="Ngày tạo: --/--/----"
-            android:textColor="#999999"
-            android:textSize="12sp" />
-
-        </LinearLayout>
-      </androidx.cardview.widget.CardView>
-
-      <!-- Action Buttons -->
-      <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:layout_marginBottom="16dp"
-        android:orientation="horizontal">
-
-        <Button
-          android:id="@+id/btnCancel"
-          android:layout_width="0dp"
-          android:layout_height="56dp"
-          android:layout_marginEnd="8dp"
-          android:layout_weight="1"
-          android:background="@drawable/button_outline"
-          android:text="Hủy"
-          android:textColor="#23437B"
-          android:textSize="16sp"
-          android:textStyle="bold" />
-
-        <Button
-          android:id="@+id/btnSave"
-          android:layout_width="0dp"
-          android:layout_height="56dp"
-          android:layout_marginStart="8dp"
-          android:layout_weight="1"
-          android:background="@drawable/button_primary"
-          android:text="Lưu Thay Đổi"
-          android:textColor="#FFFFFF"
-          android:textSize="16sp"
-          android:textStyle="bold" />
-      </LinearLayout>
-
-    </LinearLayout>
-  </ScrollView>
+  </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
