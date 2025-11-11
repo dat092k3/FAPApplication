@@ -252,8 +252,8 @@ public class AccountListActivity extends AppCompatActivity {
 
         // FAB để thêm account mới
         fabAddAccount.setOnClickListener(v -> {
-            // TODO: Navigate to Create Account screen
-            Toast.makeText(this, "Add Account clicked", Toast.LENGTH_SHORT).show();
+            Intent intent = new Intent(AccountListActivity.this, CreateAccountActivity.class);
+            startActivityForResult(intent, REQUEST_CODE_ACCOUNT_DETAIL);
         });
 
         // Search listener

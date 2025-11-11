@@ -12,8 +12,11 @@
       android:supportsRtl="true"
       android:theme="@style/Theme.FAPApplication">
         <activity
-            android:name=".NotificationDetailActivity"
-            android:exported="false"/>
+          android:exported="false"
+          android:name=".CreateAccountActivity" />
+        <activity
+          android:exported="false"
+          android:name=".NotificationDetailActivity" />
         <activity
           android:exported="false"
           android:name=".ClassListActivity" />
@@ -32,10 +35,9 @@
         <activity
           android:exported="false"
           android:name=".AdminDashboardActivity" />
-
         <activity
-            android:name=".activity.CheckAttendanceActivity"
-            android:exported="true" />
+          android:exported="true"
+          android:name=".activity.CheckAttendanceActivity" />
         <activity
           android:exported="false"
           android:name=".LoginFeidPage" />
@@ -43,11 +45,11 @@
           android:exported="true"
           android:name=".HomePage" />
         <activity
-            android:name=".SignUpActivity"
-            android:exported="false" />
+          android:exported="false"
+          android:name=".SignUpActivity" />
         <activity
-            android:exported="true"
-            android:name=".NotificationActivity">
+          android:exported="true"
+          android:name=".NotificationActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
