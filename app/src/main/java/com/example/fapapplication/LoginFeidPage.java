@@ -26,6 +26,7 @@ public class LoginFeidPage extends AppCompatActivity {
     private FirebaseAuth auth;
     private EditText email, password;
     private Spinner spinnerCampus, spinnerRole;
+    private TextView tvForgotPassword;
     private Button btnLogin;
     private ImageView backButton;
     private DatabaseReference campusRef, userRef, roleRef;
@@ -44,6 +45,7 @@ public class LoginFeidPage extends AppCompatActivity {
         btnLogin = findViewById(R.id.btnLogin);
         backButton = findViewById(R.id.backButton);
         TextView signup = findViewById(R.id.tvNoAccount);
+        tvForgotPassword = findViewById(R.id.tvForgotPassword);
 
         auth = FirebaseAuth.getInstance();
         campusRef = FirebaseDatabase.getInstance().getReference("Campus");
@@ -64,7 +66,13 @@ public class LoginFeidPage extends AppCompatActivity {
             startActivity(new Intent(LoginFeidPage.this, LoginPage.class));
             finish();
         });
+
+        tvForgotPassword.setOnClickListener(v -> {
+            Intent intent = new Intent(LoginFeidPage.this, ForgotPasswordActivity.class);
+            startActivity(intent);
+        });
     }
+
 
     private void loadCampusData() {
         campusRef.get().addOnCompleteListener(task -> {

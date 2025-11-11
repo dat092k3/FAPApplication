@@ -2,13 +2,14 @@ package com.example.fapapplication;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.View;
 import android.widget.ImageButton;
-import android.widget.PopupMenu;
 import android.widget.Toast;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
+import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
 
 import com.example.fapapplication.activity.SelectSubjectClassActivity;
 import com.example.fapapplication.activity.SelectSubjectClassAttendanceActivity;
@@ -16,67 +17,86 @@ import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
 public class TeacherDashboard extends AppCompatActivity {
 
-    // Khai báo các biến cho các thành phần UI
+    // --- KHAI BÁO BIẾN ---
+
+    // UI Components
+    private DrawerLayout drawerLayout; // Layout chính cho menu trượt
     private ImageButton menuButton;
     private BottomNavigationView bottomNavigationView;
-
-    // Khai báo các CardView để bắt sự kiện click
-    private CardView cardNotification, cardAppStatus, cardTimetable, cardExamSchedule, cardSemesterSchedule;
     private CardView cardCheckAttendance, cardGrades;
 
-    // Firebase và Google Auth
+    // Logic & Auth
+    private NavHeaderManager navHeaderManager; // Lớp quản lý Nav Header
     private FirebaseAuth auth;
     private GoogleSignInClient googleSignInClient;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        // Đảm bảo layout này có DrawerLayout và NavigationView
         setContentView(R.layout.activity_teacher_dashboard);
 
         // --- KIỂM TRA ĐĂNG NHẬP ---
         auth = FirebaseAuth.getInstance();
         FirebaseUser currentUser = auth.getCurrentUser();
         if (currentUser == null) {
-            // Nếu người dùng chưa đăng nhập, quay về màn hình chính và kết thúc Activity này
-            goToMainActivity();
+            goToLoginPage();
             return;
         }
 
-        // Cấu hình Google Client để có thể đăng xuất
-        configureGoogleSignInClient();
-
-        // --- ÁNH XẠ VIEWS TỪ LAYOUT ---
+        // --- KHỞI TẠO VÀ CÀI ĐẶT ---
         initializeViews();
-
-        // --- THIẾT LẬP CÁC BỘ LẮNG NGHE SỰ KIỆN (EVENT LISTENERS) ---
-        setupClickListeners();
+        configureGoogleSignInClient();
+        setupNavigationDrawer(); // Hàm chính để cài đặt menu trượt
+        setupClickListeners();   // Hàm này chỉ cài đặt cho các view khác
+        setupOnBackPressed();
     }
 
+    /**
+     * Ánh xạ tất cả các views từ layout vào các biến Java.
+     */
     private void initializeViews() {
-        // Ánh xạ các nút bấm và navigation
+        drawerLayout = findViewById(R.id.drawer_layout); // ID của DrawerLayout
         menuButton = findViewById(R.id.menuButton);
         bottomNavigationView = findViewById(R.id.bottomNavigationView);
-
-        // Ánh xạ các CardView (thêm ID cho chúng trong file XML nếu bạn chưa có)
-        // Lưu ý: Tôi sẽ giả định bạn đã thêm các ID sau vào các CardView tương ứng
-        // Ví dụ: android:id="@+id/cardNotification" cho CardView đầu tiên
-        // Nếu bạn chưa thêm ID, code sẽ báo lỗi. Hãy quay lại file XML và thêm chúng.
-        // cardNotification = findViewById(R.id.cardNotification);
-        // cardAppStatus = findViewById(R.id.cardAppStatus);
-        // ... (làm tương tự cho các card khác)
         cardCheckAttendance = findViewById(R.id.cardCheckAttendance);
         cardGrades = findViewById(R.id.cardGrades);
     }
 
-    private void setupClickListeners() {
-        // Sự kiện click cho nút Menu
-        menuButton.setOnClickListener(view -> showPopupMenu(view));
+    /**
+     * Thiết lập menu trượt (Navigation Drawer) và NavHeaderManager.
+     * Hàm này cũng sẽ xử lý sự kiện click cho menuButton.
+     */
+    private void setupNavigationDrawer() {
+        NavigationView navigationView = findViewById(R.id.navigation_view); // ID của NavigationView
 
+        // 1. Khởi tạo lớp quản lý header
+        navHeaderManager = new NavHeaderManager(this, drawerLayout, navigationView);
+
+        // 2. Yêu cầu manager cập nhật thông tin người dùng lên header
+        navHeaderManager.loadAndDisplayUserData();
+
+        // 3. Đăng ký lắng nghe sự kiện logout từ manager
+        navHeaderManager.setOnLogoutClickListener(this::signOut);
+
+        // 4. Gán sự kiện cho nút menu để MỞ menu trượt
+        menuButton.setOnClickListener(v -> {
+            if (!drawerLayout.isDrawerOpen(GravityCompat.START)) {
+                drawerLayout.openDrawer(GravityCompat.START);
+            }
+        });
+    }
+
+    /**
+     * Thiết lập các sự kiện click cho các view KHÔNG phải là menu button.
+     */
+    private void setupClickListeners() {
         // Sự kiện click cho BottomNavigationView
         bottomNavigationView.setOnItemSelectedListener(item -> {
             int itemId = item.getItemId();
@@ -85,59 +105,43 @@ public class TeacherDashboard extends AppCompatActivity {
                 return true;
             } else if (itemId == R.id.nav_profile) {
                 showToast("Profile clicked");
-                // Ví dụ: Chuyển sang trang Profile
-                // startActivity(new Intent(HomePage.this, ProfileActivity.class));
-                return true;
-            } else if (itemId == R.id.nav_profile) {
-                showToast("Settings clicked");
                 return true;
             }
+            // Không cần điều kiện thứ 3 cho nav_profile, nó sẽ không bao giờ được gọi
             return false;
         });
 
-        // Thiết lập sự kiện click cho các CardView (sau khi đã thêm ID và ánh xạ)
-        /*
-        cardNotification.setOnClickListener(v -> showToast("Notification Card Clicked"));
-        cardAppStatus.setOnClickListener(v -> showToast("Application Status Card Clicked"));
-        */
-        if (cardCheckAttendance != null) {
-            cardCheckAttendance.setOnClickListener(v ->
-                    startActivity(new Intent(TeacherDashboard.this, SelectSubjectClassAttendanceActivity.class))
-            );
-        }
-        if (cardGrades != null) {
-            cardGrades.setOnClickListener(v ->
-                    startActivity(new Intent(TeacherDashboard.this, SelectSubjectClassActivity.class))
-            );
-        }
+        // Thiết lập sự kiện click cho các CardView
+        cardCheckAttendance.setOnClickListener(v ->
+                startActivity(new Intent(this, SelectSubjectClassAttendanceActivity.class))
+        );
+        cardGrades.setOnClickListener(v ->
+                startActivity(new Intent(this, SelectSubjectClassActivity.class))
+        );
     }
 
-    // Hiển thị một PopupMenu khi người dùng nhấn vào nút menu
-    private void showPopupMenu(View view) {
-        PopupMenu popupMenu = new PopupMenu(this, view);
-        // Tạo menu động, bạn cũng có thể inflate từ một file XML
-        popupMenu.getMenu().add("Profile");
-        popupMenu.getMenu().add("Settings");
-        popupMenu.getMenu().add("Sign Out");
-
-        popupMenu.setOnMenuItemClickListener(item -> {
-            String title = item.getTitle().toString();
-            if ("Sign Out".equals(title)) {
-                signOut();
-                return true;
-            } else if ("Profile".equals(title)) {
-                showToast("Profile from menu");
-                return true;
-            } else if ("Settings".equals(title)) {
-                showToast("Settings from menu");
-                return true;
+    /**
+     * Thiết lập cách xử lý nút Back: ưu tiên đóng menu trượt nếu nó đang mở.
+     */
+    private void setupOnBackPressed() {
+        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                // Nếu menu đang mở, hãy đóng nó lại
+                if (drawerLayout != null && drawerLayout.isDrawerOpen(GravityCompat.START)) {
+                    drawerLayout.closeDrawer(GravityCompat.START);
+                } else {
+                    // Nếu không, thực hiện hành vi back mặc định (thoát Activity)
+                    setEnabled(false);
+                    getOnBackPressedDispatcher().onBackPressed();
+                }
             }
-            return false;
         });
-
-        popupMenu.show();
     }
 
+    /**
+     * Cấu hình Google Sign-In Client để có thể đăng xuất.
+     */
     private void configureGoogleSignInClient() {
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestIdToken(getString(R.string.client_id))
@@ -146,26 +150,30 @@ public class TeacherDashboard extends AppCompatActivity {
         googleSignInClient = GoogleSignIn.getClient(this, gso);
     }
 
-    // Hàm xử lý đăng xuất
+    /**
+     * Xử lý đăng xuất. Hàm này được gọi bởi NavHeaderManager.
+     */
     private void signOut() {
-        // Đăng xuất khỏi Firebase
         auth.signOut();
-
-        // Đăng xuất khỏi tài khoản Google
         googleSignInClient.signOut().addOnCompleteListener(this, task -> {
             showToast("Signed out successfully");
-            goToMainActivity();
+            goToLoginPage();
         });
     }
 
-    // Hàm tiện ích để chuyển về MainActivity
-    private void goToMainActivity() {
-        Intent intent = new Intent(TeacherDashboard.this, LoginPage.class);
+    /**
+     * Chuyển về màn hình LoginPage và xóa các activity cũ.
+     */
+    private void goToLoginPage() {
+        Intent intent = new Intent(this, LoginPage.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
-        finish(); // Đóng HomePage lại
+        finish();
     }
 
-    // Hàm tiện ích để hiển thị Toast
+    /**
+     * Hiển thị một Toast message ngắn.
+     */
     private void showToast(String message) {
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
     }
