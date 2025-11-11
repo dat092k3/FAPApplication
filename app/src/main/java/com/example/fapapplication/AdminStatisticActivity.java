@@ -37,7 +37,6 @@ public class AdminStatisticActivity extends AppCompatActivity {
     private TextView totalUsersText, activeUsersText;
     private PieChart passRateChart;
     private LineChart activityChart;
-    private SwitchCompat notificationSwitch, timetableSwitch, examScheduleSwitch, applicationStatusSwitch;
     private ImageButton backButton, refreshButton;
 
     // Firebase
@@ -51,7 +50,7 @@ public class AdminStatisticActivity extends AppCompatActivity {
 
         // Initialize Firebase
         databaseReference = FirebaseDatabase.getInstance().getReference();
-        statsRef = databaseReference.child("statistics");
+        statsRef = databaseReference.child("Statistics");
 
         // Initialize UI
         initializeViews();
