@@ -151,7 +151,7 @@ public class LoginFeidPage extends AppCompatActivity {
                                     Intent i;
                                     switch (roleInDB) {
                                         case "Admin":
-                                            i = new Intent(LoginFeidPage.this, AdminDashboard.class);
+                                            i = new Intent(LoginFeidPage.this, AdminDashboardActivity.class);
                                             break;
                                         case "Teacher":
                                             i = new Intent(LoginFeidPage.this, TeacherDashboard.class);

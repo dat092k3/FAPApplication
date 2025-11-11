@@ -17,14 +17,14 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
-public class AdminDashboard extends AppCompatActivity {
+public class AdminDashboardActivity extends AppCompatActivity {
 
     // Khai báo các biến cho các thành phần UI
     private ImageButton menuButton;
     private BottomNavigationView bottomNavigationView;
 
     // Khai báo các CardView cho CRUD features
-    private CardView cardAccountManagement, cardSubjectManagement, cardClassManagement;
+    private CardView cardAccountManagement, cardSubjectManagement, cardClassManagement, cardStatistic;
 
     // Firebase và Google Auth
     private FirebaseAuth auth;
@@ -66,6 +66,8 @@ public class AdminDashboard extends AppCompatActivity {
         cardAccountManagement = findViewById(R.id.cardAccountManagement);
         cardSubjectManagement = findViewById(R.id.cardSubjectManagement);
         cardClassManagement = findViewById(R.id.cardClassManagement);
+        cardStatistic = findViewById(R.id.cardStatistic);
+
     }
 
     /**
@@ -90,17 +92,22 @@ public class AdminDashboard extends AppCompatActivity {
 
         // Thiết lập sự kiện click cho các CardView CRUD
         cardAccountManagement.setOnClickListener(v -> {
-            Intent intent = new Intent(AdminDashboard.this, AccountListActivity.class);
+            Intent intent = new Intent(AdminDashboardActivity.this, AccountListActivity.class);
             startActivity(intent);
         });
 
         cardSubjectManagement.setOnClickListener(v -> {
-            Intent intent = new Intent(AdminDashboard.this, SubjectListActivity.class);
+            Intent intent = new Intent(AdminDashboardActivity.this, SubjectListActivity.class);
             startActivity(intent);
         });
 
         cardClassManagement.setOnClickListener(v -> {
-            Intent intent = new Intent(AdminDashboard.this, ClassListActivity.class);
+            Intent intent = new Intent(AdminDashboardActivity.this, ClassListActivity.class);
+            startActivity(intent);
+        });
+
+        cardStatistic.setOnClickListener(v -> {
+            Intent intent = new Intent(AdminDashboardActivity.this, AdminStatisticActivity.class);
             startActivity(intent);
         });
     }
@@ -161,7 +168,7 @@ public class AdminDashboard extends AppCompatActivity {
      * Chuyển về màn hình LoginPage
      */
     private void goToMainActivity() {
-        Intent intent = new Intent(AdminDashboard.this, LoginPage.class);
+        Intent intent = new Intent(AdminDashboardActivity.this, LoginPage.class);
         startActivity(intent);
         finish();
     }
