@@ -246,7 +246,12 @@ public class User {
             user.setAddress(snapshot.child("Address").getValue(String.class));
             user.setBirthdate(snapshot.child("Birthdate").getValue(String.class));
             user.setCreatedAt(snapshot.child("CreatedAt").getValue(Long.class));
-            user.setPassword(snapshot.child("Password").getValue(String.class));
+            // Handle Password field - có thể là String hoặc Integer/Long trong Firebase
+            Object passwordObj = snapshot.child("Password").getValue();
+            if (passwordObj != null) {
+                user.setPassword(passwordObj.toString()); // Convert to String
+            }
+
             user.setIsActive(snapshot.child("IsActive").getValue(Boolean.class));
         }
         return user;
