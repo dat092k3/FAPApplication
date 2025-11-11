@@ -42,7 +42,6 @@ public class AdminStatisticActivity extends AppCompatActivity {
 
     // Firebase
     private DatabaseReference databaseReference;
-    private DatabaseReference featureFlagsRef;
     private DatabaseReference statsRef;
 
     @Override
@@ -52,7 +51,6 @@ public class AdminStatisticActivity extends AppCompatActivity {
 
         // Initialize Firebase
         databaseReference = FirebaseDatabase.getInstance().getReference();
-        featureFlagsRef = databaseReference.child("featureFlags");
         statsRef = databaseReference.child("statistics");
 
         // Initialize UI
@@ -73,11 +71,6 @@ public class AdminStatisticActivity extends AppCompatActivity {
         passRateChart = findViewById(R.id.passRateChart);
         activityChart = findViewById(R.id.activityChart);
 
-        // Feature Flags
-        notificationSwitch = findViewById(R.id.notificationSwitch);
-        timetableSwitch = findViewById(R.id.timetableSwitch);
-        examScheduleSwitch = findViewById(R.id.examScheduleSwitch);
-        applicationStatusSwitch = findViewById(R.id.applicationStatusSwitch);
 
         // Buttons
         backButton = findViewById(R.id.backButton);
