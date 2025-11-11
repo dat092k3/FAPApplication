@@ -6,6 +6,7 @@ import android.view.View;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.widget.TextView;
+import com.example.fapapplication.repository.UserRepository;
 import com.example.fapapplication.utils.ValidationUtils;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -80,6 +81,7 @@ public class CreateAccountActivity extends AppCompatActivity {
 
     // Firebase
     private DatabaseReference campusRef;
+    private UserRepository userRepository;
 
     // Data
     private List<String> campusList;
@@ -94,6 +96,9 @@ public class CreateAccountActivity extends AppCompatActivity {
         initializeViews();
         setupClickListeners();
         loadCampusData();
+
+        // Initialize UserRepository
+        userRepository = new UserRepository();
     }
 
     /**
@@ -150,8 +155,7 @@ public class CreateAccountActivity extends AppCompatActivity {
         // Create button - validate và create account
         btnCreate.setOnClickListener(v -> {
             if (validateAllFields()) {
-                // TODO: Will implement account creation in next subtask (6.4)
-                Toast.makeText(this, "Validation passed! Account creation coming next.", Toast.LENGTH_SHORT).show();
+                showConfirmationDialog();
             }
         });
 
@@ -477,9 +481,148 @@ public class CreateAccountActivity extends AppCompatActivity {
         return true;
     }
 
+    /**
+     * Hiển thị confirmation dialog trước khi tạo account
+     */
+    private void showConfirmationDialog() {
+        String role = radioStudent.isChecked() ? "Student" : "Teacher";
+        String email = etEmail.getText().toString().trim();
+        String fullName = etFullName.getText().toString().trim();
+        String campus = spinnerCampus.getSelectedItem().toString();
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Xác nhận tạo tài khoản");
+        builder.setMessage(
+                "Bạn có chắc chắn muốn tạo tài khoản?\n\n" +
+                        "Họ tên: " + fullName + "\n" +
+                        "Email: " + email + "\n" +
+                        "Role: " + role + "\n" +
+                        "Campus: " + campus
+        );
+        builder.setPositiveButton("Tạo tài khoản", (dialog, which) -> createAccount());
+        builder.setNegativeButton("Hủy", null);
+        builder.show();
+    }
+
+    /**
+     * Tạo account mới trong Firebase Authentication và Realtime Database
+     */
+    private void createAccount() {
+        // Show loading
+        setLoading(true);
+
+        // Lấy thông tin từ form
+        String email = etEmail.getText().toString().trim();
+        String password = etPassword.getText().toString();
+        String fullName = etFullName.getText().toString().trim();
+        String role = radioStudent.isChecked() ? "Student" : "Teacher";
+        String studentId = etStudentId.getText().toString().trim();
+        String campus = spinnerCampus.getSelectedItem().toString();
+        String address = etAddress.getText().toString().trim();
+        String birthdate = etBirthdate.getText().toString().trim();
+
+        // Gọi UserRepository để tạo user
+        userRepository.createUserWithAuth(
+                email,
+                password,
+                fullName,
+                role,
+                studentId,
+                campus,
+                address,
+                birthdate,
+                com.google.firebase.auth.FirebaseAuth.getInstance(),
+                // Auth success listener
+                new UserRepository.OnUserOperationListener() {
+                    @Override
+                    public void onSuccess() {
+                        // This is called when Auth is successful
+                        // Don't show success yet, wait for DB success
+                    }
+
+                    @Override
+                    public void onError(String errorMessage) {
+                        // Auth failed
+                        setLoading(false);
+                        showErrorDialog("Lỗi tạo tài khoản", errorMessage);
+                    }
+                },
+                // Database success listener
+                new UserRepository.OnUserOperationListener() {
+                    @Override
+                    public void onSuccess() {
+                        // Both Auth and DB successful
+                        setLoading(false);
+                        showSuccessDialog();
+                    }
+
+                    @Override
+                    public void onError(String errorMessage) {
+                        // DB failed (Auth will be rolled back automatically)
+                        setLoading(false);
+                        showErrorDialog("Lỗi lưu dữ liệu", errorMessage);
+                    }
+                }
+        );
+    }
+
+    /**
+     * Set loading state (show/hide progress bar and disable/enable UI)
+     */
+    private void setLoading(boolean isLoading) {
+        progressBar.setVisibility(isLoading ? View.VISIBLE : View.GONE);
+        scrollView.setAlpha(isLoading ? 0.5f : 1.0f);
+
+        // Disable all input fields and buttons
+        etFullName.setEnabled(!isLoading);
+        etEmail.setEnabled(!isLoading);
+        etPassword.setEnabled(!isLoading);
+        etConfirmPassword.setEnabled(!isLoading);
+        etStudentId.setEnabled(!isLoading);
+        etBirthdate.setEnabled(!isLoading);
+        etAddress.setEnabled(!isLoading);
+        radioTeacher.setEnabled(!isLoading);
+        radioStudent.setEnabled(!isLoading);
+        spinnerCampus.setEnabled(!isLoading);
+        btnCancel.setEnabled(!isLoading);
+        btnCreate.setEnabled(!isLoading);
+        backButton.setEnabled(!isLoading);
+    }
+
+    /**
+     * Hiển thị dialog khi tạo account thành công
+     */
+    private void showSuccessDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Thành công");
+        builder.setMessage("Tài khoản đã được tạo thành công!");
+        builder.setPositiveButton("OK", (dialog, which) -> {
+            setResult(RESULT_OK); // Notify AccountListActivity to refresh
+            finish();
+        });
+        builder.setCancelable(false); // Không cho dismiss bằng cách bấm ra ngoài
+        builder.show();
+    }
+
+    /**
+     * Hiển thị dialog khi có lỗi
+     */
+    private void showErrorDialog(String title, String message) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(title);
+        builder.setMessage(message);
+        builder.setPositiveButton("OK", null);
+        builder.show();
+    }
+
     @Override
     public void onBackPressed() {
-        // TODO: Will add unsaved changes check in later subtask
+        // Không cho phép back nếu đang loading
+        if (progressBar.getVisibility() == View.VISIBLE) {
+            Toast.makeText(this, "Vui lòng đợi quá trình tạo tài khoản hoàn tất.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         super.onBackPressed();
     }
 }
