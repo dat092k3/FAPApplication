@@ -12,260 +12,235 @@ import com.google.firebase.database.ValueEventListener;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Repository class để quản lý các thao tác với Class trong Firebase Realtime Database.
- * Provides methods for CRUD operations on Class entities.
- */
 public class ClassRepository {
 
     private final DatabaseReference classesRef;
+    private static ClassRepository instance;
 
-    /**
-     * Callback interface cho các thao tác bất đồng bộ trả về danh sách classes
-     */
-    public interface OnClassesLoadedListener {
-        void onClassesLoaded(List<Class> classes);
-        void onError(String errorMessage);
-    }
-
-    /**
-     * Callback interface cho các thao tác bất đồng bộ trả về một class
-     */
-    public interface OnClassLoadedListener {
-        void onClassLoaded(Class classObj);
-        void onError(String errorMessage);
-    }
-
-    /**
-     * Callback interface cho các thao tác create/update/delete
-     */
-    public interface OnOperationCompleteListener {
-        void onSuccess();
-        void onError(String errorMessage);
-    }
-
-    /**
-     * Constructor
-     */
     public ClassRepository() {
         FirebaseDatabase database = FirebaseDatabase.getInstance();
         this.classesRef = database.getReference("Classes");
     }
 
-    /**
-     * Lấy tất cả classes từ Firebase
-     *
-     * @param listener Callback để nhận kết quả
-     */
-    public void getAllClasses(@NonNull final OnClassesLoadedListener listener) {
+    public static synchronized ClassRepository getInstance() {
+        if (instance == null) {
+            instance = new ClassRepository();
+        }
+        return instance;
+    }
+
+    // Callback interfaces
+    public interface ClassListCallback {
+        void onSuccess(List<Class> classes);
+        void onError(String errorMessage);
+    }
+
+    public interface ClassCallback {
+        void onSuccess(Class classObj);
+        void onError(String errorMessage);
+    }
+
+    public interface OperationCallback {
+        void onSuccess();
+        void onError(String errorMessage);
+    }
+
+    public interface ExistsCallback {
+        void onResult(boolean exists);
+    }
+
+    // Fetch tất cả classes từ Firebase (realtime)
+    public ValueEventListener getAllClasses(@NonNull ClassListCallback callback) {
+        ValueEventListener listener = new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                List<Class> classes = new ArrayList<>();
+
+                for (DataSnapshot classSnapshot : dataSnapshot.getChildren()) {
+                    Class classObj = Class.fromFirebaseSnapshot(classSnapshot);
+                    if (classObj != null) {
+                        classes.add(classObj);
+                    }
+                }
+
+                callback.onSuccess(classes);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                callback.onError("Error fetching classes: " + databaseError.getMessage());
+            }
+        };
+
+        classesRef.addValueEventListener(listener);
+        return listener;
+    }
+
+    // Fetch tất cả classes từ Firebase (one-time)
+    public void getAllClassesOnce(@NonNull ClassListCallback callback) {
         classesRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                List<Class> classList = new ArrayList<>();
+                List<Class> classes = new ArrayList<>();
 
-                try {
-                    for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                        Class classObj = Class.fromFirebaseSnapshot(snapshot);
-                        if (classObj != null) {
-                            classList.add(classObj);
-                        }
+                for (DataSnapshot classSnapshot : dataSnapshot.getChildren()) {
+                    Class classObj = Class.fromFirebaseSnapshot(classSnapshot);
+                    if (classObj != null) {
+                        classes.add(classObj);
                     }
-                    listener.onClassesLoaded(classList);
-                } catch (Exception e) {
-                    listener.onError("Error parsing classes: " + e.getMessage());
                 }
+
+                callback.onSuccess(classes);
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
-                listener.onError("Database error: " + databaseError.getMessage());
+                callback.onError("Error fetching classes: " + databaseError.getMessage());
             }
         });
     }
 
-    /**
-     * Lấy tất cả classes đang active
-     *
-     * @param listener Callback để nhận kết quả
-     */
-    public void getActiveClasses(@NonNull final OnClassesLoadedListener listener) {
-        getAllClasses(new OnClassesLoadedListener() {
-            @Override
-            public void onClassesLoaded(List<Class> classes) {
-                List<Class> activeClasses = new ArrayList<>();
-                for (Class c : classes) {
-                    if (c.isActive()) {
-                        activeClasses.add(c);
+    // Fetch tất cả active classes
+    public void getActiveClasses(@NonNull ClassListCallback callback) {
+        classesRef.orderByChild("IsActive").equalTo(true)
+                .addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                        List<Class> classes = new ArrayList<>();
+
+                        for (DataSnapshot classSnapshot : dataSnapshot.getChildren()) {
+                            Class classObj = Class.fromFirebaseSnapshot(classSnapshot);
+                            if (classObj != null) {
+                                classes.add(classObj);
+                            }
+                        }
+
+                        callback.onSuccess(classes);
                     }
-                }
-                listener.onClassesLoaded(activeClasses);
-            }
 
-            @Override
-            public void onError(String errorMessage) {
-                listener.onError(errorMessage);
-            }
-        });
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError databaseError) {
+                        callback.onError("Error fetching active classes: " + databaseError.getMessage());
+                    }
+                });
     }
 
-    /**
-     * Lấy một class theo ID
-     *
-     * @param classId ID của class cần lấy
-     * @param listener Callback để nhận kết quả
-     */
-    public void getClassById(@NonNull String classId, @NonNull final OnClassLoadedListener listener) {
+    // Fetch class theo ID
+    public void getClassById(@NonNull String classId, @NonNull ClassCallback callback) {
         classesRef.child(classId).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                try {
-                    if (dataSnapshot.exists()) {
-                        Class classObj = Class.fromFirebaseSnapshot(dataSnapshot);
-                        if (classObj != null) {
-                            listener.onClassLoaded(classObj);
-                        } else {
-                            listener.onError("Failed to parse class data");
-                        }
+                if (dataSnapshot.exists()) {
+                    Class classObj = Class.fromFirebaseSnapshot(dataSnapshot);
+                    if (classObj != null) {
+                        callback.onSuccess(classObj);
                     } else {
-                        listener.onError("Class not found");
+                        callback.onError("Failed to parse class data");
                     }
-                } catch (Exception e) {
-                    listener.onError("Error loading class: " + e.getMessage());
+                } else {
+                    callback.onError("Class not found with ID: " + classId);
                 }
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
-                listener.onError("Database error: " + databaseError.getMessage());
+                callback.onError("Error fetching class: " + databaseError.getMessage());
             }
         });
     }
 
-    /**
-     * Lấy classes theo semester
-     *
-     * @param semester Học kỳ cần filter
-     * @param listener Callback để nhận kết quả
-     */
-    public void getClassesBySemester(@NonNull String semester, @NonNull final OnClassesLoadedListener listener) {
-        getAllClasses(new OnClassesLoadedListener() {
-            @Override
-            public void onClassesLoaded(List<Class> classes) {
-                List<Class> filteredClasses = new ArrayList<>();
-                for (Class c : classes) {
-                    if (c.getSemester().equalsIgnoreCase(semester)) {
-                        filteredClasses.add(c);
-                    }
-                }
-                listener.onClassesLoaded(filteredClasses);
-            }
-
-            @Override
-            public void onError(String errorMessage) {
-                listener.onError(errorMessage);
-            }
-        });
-    }
-
-    /**
-     * Tạo class mới trong Firebase
-     *
-     * @param classObj Class object cần tạo
-     * @param listener Callback để nhận kết quả
-     */
-    public void createClass(@NonNull Class classObj, @NonNull final OnOperationCompleteListener listener) {
-        try {
-            // Validate
-            if (classObj.getId() == null || classObj.getId().isEmpty()) {
-                listener.onError("Class ID cannot be empty");
-                return;
-            }
-
-            if (classObj.getClassName() == null || classObj.getClassName().isEmpty()) {
-                listener.onError("Class name cannot be empty");
-                return;
-            }
-
-            if (classObj.getSemester() == null || classObj.getSemester().isEmpty()) {
-                listener.onError("Semester cannot be empty");
-                return;
-            }
-
-            // Set timestamp nếu chưa có
-            if (classObj.getCreatedAt() == 0) {
-                classObj.setCreatedAt(System.currentTimeMillis());
-            }
-
-            // Lưu vào Firebase
-            classesRef.child(classObj.getId())
-                    .setValue(classObj.toFirebaseMap())
-                    .addOnSuccessListener(aVoid -> listener.onSuccess())
-                    .addOnFailureListener(e -> listener.onError("Failed to create class: " + e.getMessage()));
-
-        } catch (Exception e) {
-            listener.onError("Error creating class: " + e.getMessage());
+    // Tạo class mới
+    public void createClass(@NonNull Class classObj, @NonNull OperationCallback callback) {
+        if (classObj.getId() == null || classObj.getId().isEmpty()) {
+            callback.onError("Class ID is required");
+            return;
         }
-    }
 
-    /**
-     * Cập nhật thông tin class
-     *
-     * @param classObj Class object với thông tin mới
-     * @param listener Callback để nhận kết quả
-     */
-    public void updateClass(@NonNull Class classObj, @NonNull final OnOperationCompleteListener listener) {
-        try {
-            if (classObj.getId() == null || classObj.getId().isEmpty()) {
-                listener.onError("Class ID cannot be empty");
-                return;
-            }
-
-            classesRef.child(classObj.getId())
-                    .updateChildren(classObj.toFirebaseMap())
-                    .addOnSuccessListener(aVoid -> listener.onSuccess())
-                    .addOnFailureListener(e -> listener.onError("Failed to update class: " + e.getMessage()));
-
-        } catch (Exception e) {
-            listener.onError("Error updating class: " + e.getMessage());
+        if (classObj.getClassName() == null || classObj.getClassName().isEmpty()) {
+            callback.onError("Class name is required");
+            return;
         }
+
+        if (classObj.getCreatedAt() == 0) {
+            classObj.setCreatedAt(System.currentTimeMillis());
+        }
+
+        classesRef.child(classObj.getId())
+                .setValue(classObj.toFirebaseMap())
+                .addOnSuccessListener(aVoid -> callback.onSuccess())
+                .addOnFailureListener(e -> callback.onError("Error creating class: " + e.getMessage()));
     }
 
-    /**
-     * Activate hoặc deactivate một class
-     *
-     * @param classId ID của class
-     * @param isActive Trạng thái mới (true = active, false = inactive)
-     * @param listener Callback để nhận kết quả
-     */
-    public void setClassActiveStatus(@NonNull String classId, boolean isActive,
-            @NonNull final OnOperationCompleteListener listener) {
-        classesRef.child(classId).child("IsActive")
-                .setValue(isActive)
-                .addOnSuccessListener(aVoid -> listener.onSuccess())
-                .addOnFailureListener(e -> listener.onError("Failed to update status: " + e.getMessage()));
+    // Update class
+    public void updateClass(@NonNull Class classObj, @NonNull OperationCallback callback) {
+        if (classObj.getId() == null || classObj.getId().isEmpty()) {
+            callback.onError("Class ID is required");
+            return;
+        }
+
+        classesRef.child(classObj.getId())
+                .updateChildren(classObj.toFirebaseMap())
+                .addOnSuccessListener(aVoid -> callback.onSuccess())
+                .addOnFailureListener(e -> callback.onError("Error updating class: " + e.getMessage()));
     }
 
-    /**
-     * Xóa class khỏi Firebase
-     * Note: Nên deactivate thay vì xóa để giữ lại dữ liệu lịch sử
-     *
-     * @param classId ID của class cần xóa
-     * @param listener Callback để nhận kết quả
-     */
-    public void deleteClass(@NonNull String classId, @NonNull final OnOperationCompleteListener listener) {
+    // Update một field cụ thể
+    public void updateClassField(@NonNull String classId, @NonNull String fieldName,
+            Object value, @NonNull OperationCallback callback) {
+        classesRef.child(classId).child(fieldName)
+                .setValue(value)
+                .addOnSuccessListener(aVoid -> callback.onSuccess())
+                .addOnFailureListener(e -> callback.onError("Error updating field: " + e.getMessage()));
+    }
+
+    // Activate class
+    public void activateClass(@NonNull String classId, @NonNull OperationCallback callback) {
+        updateClassField(classId, "IsActive", true, callback);
+    }
+
+    // Deactivate class
+    public void deactivateClass(@NonNull String classId, @NonNull OperationCallback callback) {
+        updateClassField(classId, "IsActive", false, callback);
+    }
+
+    // Delete class
+    public void deleteClass(@NonNull String classId, @NonNull OperationCallback callback) {
         classesRef.child(classId)
                 .removeValue()
-                .addOnSuccessListener(aVoid -> listener.onSuccess())
-                .addOnFailureListener(e -> listener.onError("Failed to delete class: " + e.getMessage()));
+                .addOnSuccessListener(aVoid -> callback.onSuccess())
+                .addOnFailureListener(e -> callback.onError("Error deleting class: " + e.getMessage()));
     }
 
-    /**
-     * Kiểm tra xem class ID đã tồn tại chưa
-     *
-     * @param classId ID cần kiểm tra
-     * @param listener Callback để nhận kết quả
-     */
-    public void checkClassExists(@NonNull String classId, @NonNull final OnClassLoadedListener listener) {
-        getClassById(classId, listener);
+    // Check xem class name đã tồn tại chưa
+    public void isClassNameExists(@NonNull String className, @NonNull ExistsCallback callback) {
+        classesRef.orderByChild("ClassName").equalTo(className)
+                .addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                        callback.onResult(dataSnapshot.exists());
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError databaseError) {
+                        callback.onResult(false);
+                    }
+                });
+    }
+
+    // Generate unique class ID
+    public String generateClassId() {
+        return classesRef.push().getKey();
+    }
+
+    // Remove event listener
+    public void removeListener(ValueEventListener listener) {
+        if (listener != null) {
+            classesRef.removeEventListener(listener);
+        }
+    }
+
+    // Get DatabaseReference
+    public DatabaseReference getClassesReference() {
+        return classesRef;
     }
 }

@@ -115,6 +115,25 @@ public class GradeItemAdapter extends RecyclerView.Adapter<GradeItemAdapter.Grad
             etItemName.setTag(nameWatcher);
             etWeight.setTag(weightWatcher);
 
+            // Auto-clear "0" hoặc "0.0" khi focus vào weight field
+            etWeight.setOnFocusChangeListener((v, hasFocus) -> {
+                if (hasFocus) {
+                    String currentText = etWeight.getText().toString().trim();
+                    // Nếu là "0" hoặc "0.0" thì xóa để user nhập dễ hơn
+                    if (currentText.equals("0") || currentText.equals("0.0")) {
+                        etWeight.setText("");
+                    }
+                    // Select all text để user có thể ghi đè luôn
+                    etWeight.selectAll();
+                } else {
+                    // Khi mất focus, nếu rỗng thì set lại về 0
+                    String currentText = etWeight.getText().toString().trim();
+                    if (currentText.isEmpty()) {
+                        etWeight.setText("0.0");
+                    }
+                }
+            });
+
             btnRemoveItem.setOnClickListener(v -> {
                 if (changeListener != null) {
                     changeListener.onItemRemoved(getAdapterPosition());
