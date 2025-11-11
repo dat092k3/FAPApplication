@@ -40,6 +40,9 @@
           android:exported="true"
           android:name=".HomePage" />
         <activity
+            android:name=".SignUpActivity"
+            android:exported="false" />
+        <activity
           android:exported="true"
           android:name=".LoginPage">
             <intent-filter>
