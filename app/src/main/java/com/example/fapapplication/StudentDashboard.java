@@ -117,11 +117,19 @@ public class StudentDashboard extends AppCompatActivity {
             });
         }
 
+        if (cardNotification != null) {
+            cardNotification.setClickable(true);
+            cardNotification.setFocusable(true);
+            cardNotification.setOnClickListener(v -> {
+                startActivity(new Intent(StudentDashboard.this, NotificationActivity.class));
+            });
+        }
+
         if (cardMarkReport != null) {
             cardMarkReport.setClickable(true);
             cardMarkReport.setFocusable(true);
             cardMarkReport.setOnClickListener(v -> {
-                showToast("Mark Report clicked");
+                startActivity(new Intent(StudentDashboard.this, SemesterMarkActivity.class));
             });
         }
 

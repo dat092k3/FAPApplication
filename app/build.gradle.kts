@@ -80,6 +80,7 @@ dependencies {
     // Rich text editor
     implementation("com.github.wasabeef:richeditor-android:2.0.0")
 
+    implementation("com.google.firebase:firebase-database:21.0.0")
 
     // Testing
     testImplementation(libs.junit)

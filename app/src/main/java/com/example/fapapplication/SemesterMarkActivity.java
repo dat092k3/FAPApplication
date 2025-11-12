@@ -5,17 +5,29 @@ import android.widget.Button;
 import android.widget.HorizontalScrollView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+
 import androidx.appcompat.app.AppCompatActivity;
+
 import com.example.fapapplication.model.Grade;
-import com.google.firebase.firestore.*;
+
 import java.util.*;
+
+import com.example.fapapplication.model.SemesterGrade;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+
 
 public class SemesterMarkActivity extends AppCompatActivity {
 
     private LinearLayout tabLayout;
     private HorizontalScrollView courseList;
-    private FirebaseFirestore db;
     private String currentStudentId = "student001"; // Thay bằng ID thực tế
+    private FirebaseDatabase database;
+    private DatabaseReference dbRef;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -23,24 +35,36 @@ public class SemesterMarkActivity extends AppCompatActivity {
         setContentView(R.layout.activity_semester_mark);
         courseList = findViewById(R.id.semesterTabs);
         tabLayout = findViewById(R.id.layoutTabs);
-        db = FirebaseFirestore.getInstance();
+        database = FirebaseDatabase.getInstance("https://prm202-4d2da-default-rtdb.asia-southeast1.firebasedatabase.app/");
+        dbRef = database.getReference("grades");
 
         loadTerms();
     }
 
     private void loadTerms() {
-        db.collection("grades")
-                .whereEqualTo("studentId", currentStudentId)
-                .get()
-                .addOnSuccessListener(query -> {
-                    Set<String> terms = new TreeSet<>();
-                    for (DocumentSnapshot doc : query.getDocuments()) {
-                        String term = doc.getString("term");
-                        if (term != null) terms.add(term);
+        dbRef = FirebaseDatabase.getInstance(
+                "https://prm202-4d2da-default-rtdb.asia-southeast1.firebasedatabase.app/"
+        ).getReference("grades");
+
+        dbRef.orderByChild("studentId").equalTo(currentStudentId)
+                .addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot snapshot) {
+                        Set<String> terms = new TreeSet<>();
+                        for (DataSnapshot child : snapshot.getChildren()) {
+                            String term = child.child("term").getValue(String.class);
+                            if (term != null) terms.add(term);
+                        }
+                        showTermTabs(new ArrayList<>(terms));
                     }
-                    showTermTabs(new ArrayList<>(terms));
+
+                    @Override
+                    public void onCancelled(DatabaseError error) {
+                        error.toException().printStackTrace();
+                    }
                 });
     }
+
 
     private void showTermTabs(List<String> terms) {
         tabLayout.removeAllViews();
@@ -57,26 +81,35 @@ public class SemesterMarkActivity extends AppCompatActivity {
     }
 
     private void loadGradesForTerm(String term) {
-        db.collection("grades")
-                .whereEqualTo("studentId", currentStudentId)
-                .whereEqualTo("term", term)
-                .get()
-                .addOnSuccessListener(query -> {
-                    List<Grade> grades = new ArrayList<>();
-                    for (DocumentSnapshot doc : query.getDocuments()) {
-                        Grade grade = doc.toObject(Grade.class);
-                        if (grade != null) {
-                            grade.calculateAverage();
-                            grades.add(grade);
+        dbRef = FirebaseDatabase.getInstance(
+                "https://prm202-4d2da-default-rtdb.asia-southeast1.firebasedatabase.app/"
+        ).getReference("grades");
+
+        dbRef.orderByChild("term").equalTo(term)
+                .addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot snapshot) {
+                        List<SemesterGrade> grades = new ArrayList<>();
+                        for (DataSnapshot child : snapshot.getChildren()) {
+                            Grade grade = child.getValue(Grade.class);
+                            if (grade != null && currentStudentId.equals(grade.getStudentId())) {
+                                grade.calculateAverage();
+                                grades.add(grade);
+                            }
                         }
+                        displayGrades(grades);
                     }
-                    displayGrades(grades);
+
+                    @Override
+                    public void onCancelled(DatabaseError error) {
+                        error.toException().printStackTrace();
+                    }
                 });
     }
 
-    private void displayGrades(List<Grade> grades) {
+    private void displayGrades(List<SemesterGrade> grades) {
         courseList.removeAllViews();
-        for (Grade grade : grades) {
+        for (SemesterGrade grade : grades) {
             TextView courseView = new TextView(this);
             String status = (grade.getAverage() != null && grade.getAverage() > 0) ? "✅ Passed" : "❌ Not Passed";
             courseView.setText(
