@@ -80,6 +80,8 @@ public class StudentDashboard extends AppCompatActivity {
         cardAttendanceReport = findViewById(R.id.cardAttendanceReport);
         cardMarkReport = findViewById(R.id.cardMarkReport);
         cardCurriculumReport = findViewById(R.id.cardCurriculumReport);
+        cardNotification = findViewById(R.id.cardNotification);
+        cardMarkReport = findViewById(R.id.cardMarkReport);
     }
 
     private void setupClickListeners() {

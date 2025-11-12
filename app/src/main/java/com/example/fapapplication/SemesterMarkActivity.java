@@ -3,6 +3,7 @@ package com.example.fapapplication;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.HorizontalScrollView;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -27,6 +28,8 @@ public class SemesterMarkActivity extends AppCompatActivity {
     private String currentStudentId = "student001"; // Thay bằng ID thực tế
     private FirebaseDatabase database;
     private DatabaseReference dbRef;
+    private ImageView btnBack;
+
 
 
     @Override
@@ -37,8 +40,11 @@ public class SemesterMarkActivity extends AppCompatActivity {
         tabLayout = findViewById(R.id.layoutTabs);
         database = FirebaseDatabase.getInstance("https://prm202-4d2da-default-rtdb.asia-southeast1.firebasedatabase.app/");
         dbRef = database.getReference("grades");
+        btnBack = findViewById(R.id.btnBack);
 
         loadTerms();
+        btnBack.setOnClickListener(v -> onBackPressed());
+
     }
 
     private void loadTerms() {
@@ -122,5 +128,6 @@ public class SemesterMarkActivity extends AppCompatActivity {
             courseView.setTextSize(16);
             courseList.addView(courseView);
         }
+
     }
 }
