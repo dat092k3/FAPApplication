@@ -52,8 +52,7 @@ public class AdminNotificationActivity extends AppCompatActivity {
         btnAdd = findViewById(R.id.addNotificationBtn);
         dbRef = FirebaseDatabase.getInstance().getReference("Notifications");
 
-//        loadNotifications();
-        notificationList.add(new Notification("Noti1","Title", "Message", 1111111));
+        loadNotifications();
 
         adapter = new AdminNotificationAdapter(notificationList, new AdminNotificationAdapter.OnItemClickListener() {
             @Override
@@ -81,12 +80,8 @@ public class AdminNotificationActivity extends AppCompatActivity {
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 notificationList.clear();
                 for (DataSnapshot child : snapshot.getChildren()) {
-                    Notification n = new Notification();
-                    n.setId(child.getKey());
-                    n.setTitle(child.child("title").getValue(String.class));
-                    n.setMessage(child.child("message").getValue(String.class));
-                    n.setCreateTime(child.child("createTime").getValue(Long.class));
-                    notificationList.add(n); // thêm lên đầu
+                    Notification n = child.getValue(Notification.class);
+                    notificationList.add(0, n); // thêm lên đầu
                 }
                 adapter.notifyDataSetChanged();
             }

@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-  <string name="app_name">FAPApplication</string>
-  <string name="client_id">871372708025-i47gkch9loubbkv4rjnpm6m7vbtpmvec.apps.googleusercontent.com</string>
+    <string name="app_name">FAPApplication</string>
+    <string name="client_id">871372708025-i47gkch9loubbkv4rjnpm6m7vbtpmvec.apps.googleusercontent.com</string>
 
-  <string name="check_attendance">Điểm danh học sinh</string>
-  <string name="manage_attendance">Quản lý attendance cho các lớp học</string>
-  <string name="classes_title">Lớp học</string>
-  <string name="students_title">Danh sách học sinh</string>
-  <string name="save_button">Lưu điểm danh</string>
-  <string name="select_class">Chọn một lớp để xem danh sách học sinh</string>
-  <string name="save_success">Đã lưu dữ liệu điểm danh!</string>
-  <string name="select_class_first">Vui lòng chọn một lớp</string>
+    <string name="check_attendance">Điểm danh học sinh</string>
+    <string name="manage_attendance">Quản lý attendance cho các lớp học</string>
+    <string name="classes_title">Lớp học</string>
+    <string name="students_title">Danh sách học sinh</string>
+    <string name="save_button">Lưu điểm danh</string>
+    <string name="select_class">Chọn một lớp để xem danh sách học sinh</string>
+    <string name="save_success">Đã lưu dữ liệu điểm danh!</string>
+    <string name="select_class_first">Vui lòng chọn một lớp</string>
 
 </resources>
