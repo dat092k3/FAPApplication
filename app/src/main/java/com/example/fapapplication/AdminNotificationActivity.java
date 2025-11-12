@@ -7,6 +7,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
@@ -71,7 +72,8 @@ public class AdminNotificationActivity extends AppCompatActivity {
 
         btnAdd.setOnClickListener(v -> showAddEditDialog(null)); // null = thêm mới
 
-
+        ImageButton backButton = findViewById(R.id.backButton);
+        backButton.setOnClickListener(v -> finish());
     }
 
     private void loadNotifications() {

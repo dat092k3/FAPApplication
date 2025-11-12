@@ -320,7 +320,7 @@ public class AdminScheduleActivity extends AppCompatActivity
 
                 for (DataSnapshot ds : snapshot.getChildren()) {
                     UserClassSubject ucs = UserClassSubject.fromFirebaseSnapshot(ds);
-                    if (ucs != null && "Teacher".equals(ucs.getRole())) {
+                    if (ucs != null) {
                         ucsList.add(ucs);
 
                         // Get class name
@@ -427,9 +427,6 @@ public class AdminScheduleActivity extends AppCompatActivity
                 teacherName
         );
     }
-
-// CONTINUED IN NEXT MESSAGE... (showDatePicker, applyFilters, dialog, CRUD methods)
-// CONTINUED FROM PART 1...
 
     private void showDatePicker() {
         Calendar calendar = Calendar.getInstance();

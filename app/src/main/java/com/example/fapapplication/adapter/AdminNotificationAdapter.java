@@ -48,7 +48,7 @@ public class AdminNotificationAdapter extends RecyclerView.Adapter<AdminNotifica
         holder.title.setText(noti.getTitle());
         holder.message.setText(Html.fromHtml(noti.getMessage(), HtmlCompat.FROM_HTML_MODE_LEGACY)); // Giữ format HTML
         SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault());
-        holder.createTime.setText(String.valueOf(noti.getCreateTime()));
+        holder.createTime.setText(sdf.format(new Date(noti.getCreateTime())));
         holder.btnEdit.setOnClickListener(v -> listener.onEdit(noti));
         holder.btnDelete.setOnClickListener(v -> listener.onDelete(noti));
     }

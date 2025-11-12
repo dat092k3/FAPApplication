@@ -13,7 +13,7 @@
         android:theme="@style/Theme.FAPApplication">
         <activity
             android:name=".AdminScheduleActivity"
-            android:exported="false" />
+            android:exported="true" />
         <activity
             android:name=".CreateClassActivity"
             android:exported="false" />

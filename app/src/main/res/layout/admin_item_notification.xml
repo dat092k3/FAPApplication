@@ -5,8 +5,8 @@
     android:padding="10dp"
     android:layout_marginBottom="10dp"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
-
+    android:layout_height="wrap_content"
+    android:background="@color/gray">
     <TextView
         android:id="@+id/txtTitle"
         android:textStyle="bold"
@@ -27,7 +27,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="4dp"
-        android:textColor="@color/gray"
+        android:textColor="@color/dark_gray"
         android:text="createTime"/>
 
     <LinearLayout
@@ -54,4 +54,5 @@
             android:layout_width="50dp"
             app:tint="@color/red_status"/>
     </LinearLayout>
+
 </LinearLayout>

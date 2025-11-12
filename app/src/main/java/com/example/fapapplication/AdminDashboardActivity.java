@@ -26,7 +26,8 @@ public class AdminDashboardActivity extends AppCompatActivity {
     private DrawerLayout drawerLayout; // Layout chính cho menu trượt
     private ImageButton menuButton;
     private CardView cardAccountManagement, cardSubjectManagement,
-            cardClassManagement, cardStatistic, cardNotification;
+            cardClassManagement, cardStatistic, cardNotification,
+            cardScheduleManagement;
 
     // Logic & Auth
     private NavHeaderManager navHeaderManager; // Lớp quản lý Nav Header
@@ -67,6 +68,7 @@ public class AdminDashboardActivity extends AppCompatActivity {
         cardClassManagement = findViewById(R.id.cardClassManagement);
         cardStatistic = findViewById(R.id.cardStatistic);
         cardNotification = findViewById(R.id.cardNotification);
+        cardScheduleManagement = findViewById(R.id.cardScheduleManagement);
     }
 
     /**
@@ -98,8 +100,9 @@ public class AdminDashboardActivity extends AppCompatActivity {
         cardAccountManagement.setOnClickListener(v -> startActivity(new Intent(this, AccountListActivity.class)));
         cardSubjectManagement.setOnClickListener(v -> startActivity(new Intent(this, SubjectListActivity.class)));
         cardClassManagement.setOnClickListener(v -> startActivity(new Intent(this, ClassListActivity.class)));
-//        cardStatistic.setOnClickListener(v -> startActivity(new Intent(this, AdminStatisticActivity.class)));
-//        cardNotification.setOnClickListener(v -> startActivity(new Intent(this, AdminNotificationActivity.class)));
+        cardStatistic.setOnClickListener(v -> startActivity(new Intent(this, AdminStatisticActivity.class)));
+        cardNotification.setOnClickListener(v -> startActivity(new Intent(this, AdminNotificationActivity.class)));
+        cardScheduleManagement.setOnClickListener(v -> startActivity(new Intent(this, AdminScheduleActivity.class)));
     }
 
     /**
@@ -133,7 +136,6 @@ public class AdminDashboardActivity extends AppCompatActivity {
         });
     }
 
-    // --- CÁC HÀM TIỆN ÍCH (Giữ nguyên) ---
 
     private void configureGoogleSignInClient() {
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)

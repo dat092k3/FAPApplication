@@ -78,7 +78,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
-                    android:text="Notification and Application status"
+                    android:text="Statistic and notification"
                     android:textColor="#23437B"
                     android:textSize="20sp"
                     android:textStyle="bold" />
@@ -96,12 +96,46 @@
                     android:layout_marginBottom="16dp"
                     android:orientation="horizontal">
 
-                    <!-- Card: Statistic (ĐÃ SỬA LẠI ID) -->
                     <androidx.cardview.widget.CardView
                         android:id="@+id/cardStatistic"
                         android:layout_width="0dp"
                         android:layout_height="140dp"
                         android:layout_marginEnd="8dp"
+                        android:layout_weight="1"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:foreground="?android:attr/selectableItemBackground"
+                        app:cardCornerRadius="10dp"
+                        app:cardElevation="4dp">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:gravity="center"
+                            android:orientation="vertical"
+                            android:padding="16dp">
+
+                            <ImageView
+                                android:layout_width="50dp"
+                                android:layout_height="50dp"
+                                android:contentDescription="Statistic Icon" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="8dp"
+                                android:text="Statistic Board"
+                                android:textColor="#F49D00"
+                                android:textStyle="bold" />
+                        </LinearLayout>
+                    </androidx.cardview.widget.CardView>
+
+                    <!-- Card: Application Notification -->
+                    <androidx.cardview.widget.CardView
+                        android:id="@+id/cardNotification"
+                        android:layout_width="0dp"
+                        android:layout_height="140dp"
+                        android:layout_marginStart="8dp"
                         android:layout_weight="1"
                         android:clickable="true"
                         android:focusable="true"
@@ -125,42 +159,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="8dp"
-                                android:text="Notification"
-                                android:textColor="#F49D00"
-                                android:textStyle="bold" />
-                        </LinearLayout>
-                    </androidx.cardview.widget.CardView>
-
-                    <!-- Card: Application Status -->
-                    <androidx.cardview.widget.CardView
-                        android:id="@+id/cardNotification"
-                        android:layout_width="0dp"
-                        android:layout_height="140dp"
-                        android:layout_marginStart="8dp"
-                        android:layout_weight="1"
-                        android:clickable="true"
-                        android:focusable="true"
-                        android:foreground="?android:attr/selectableItemBackground"
-                        app:cardCornerRadius="10dp"
-                        app:cardElevation="4dp">
-
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:gravity="center"
-                            android:orientation="vertical"
-                            android:padding="16dp">
-
-                            <ImageView
-                                android:layout_width="50dp"
-                                android:layout_height="50dp"
-                                android:contentDescription="Application Status Icon" />
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="8dp"
-                                android:text="Application status"
+                                android:text="Notification Management"
                                 android:textAlignment="center"
                                 android:textColor="#F49D00"
                                 android:textStyle="bold" />
@@ -266,12 +265,21 @@
                     </androidx.cardview.widget.CardView>
                 </LinearLayout>
 
+
                 <!-- Hàng thứ hai: Class Management (căn giữa) -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:orientation="horizontal">
+
                 <androidx.cardview.widget.CardView
                     android:id="@+id/cardClassManagement"
-                    android:layout_width="match_parent"
+                    android:layout_width="0dp"
                     android:layout_height="140dp"
                     android:layout_marginBottom="16dp"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="8dp"
                     android:clickable="true"
                     android:focusable="true"
                     android:foreground="?android:attr/selectableItemBackground"
@@ -301,6 +309,44 @@
                             android:textStyle="bold" />
                     </LinearLayout>
                 </androidx.cardview.widget.CardView>
+
+                <androidx.cardview.widget.CardView
+                    android:id="@+id/cardScheduleManagement"
+                    android:layout_width="0dp"
+                    android:layout_height="140dp"
+                    android:layout_marginEnd="8dp"
+                    android:layout_weight="1"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:foreground="?android:attr/selectableItemBackground"
+                    app:cardCornerRadius="10dp"
+                    app:cardElevation="4dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:gravity="center"
+                        android:orientation="vertical"
+                        android:padding="16dp">
+
+                        <ImageView
+                            android:layout_width="50dp"
+                            android:layout_height="50dp"
+                            android:contentDescription="Schedule Management Icon"
+                            android:src="@drawable/ic_person" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:text="Schedule Management"
+                            android:textAlignment="center"
+                            android:textColor="#F49D00"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+                </androidx.cardview.widget.CardView>
+            </LinearLayout>
+
 
             </LinearLayout>
         </ScrollView>
