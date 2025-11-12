@@ -77,7 +77,6 @@ dependencies {
         exclude(group = "com.android.support")
     }
 
-
     // Rich text editor
     implementation("com.github.wasabeef:richeditor-android:2.0.0")
 

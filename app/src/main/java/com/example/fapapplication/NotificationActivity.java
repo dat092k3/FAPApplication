@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -24,6 +25,7 @@ public class NotificationActivity extends AppCompatActivity {
     private List<Notification> list = new ArrayList<>();
     private TextView tvResultCount;
     private EditText edtSearch;
+    private ImageView btnBack;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,6 +35,7 @@ public class NotificationActivity extends AppCompatActivity {
         recyclerView = findViewById(R.id.recyclerNotification);
         tvResultCount = findViewById(R.id.tvResultCount);
         edtSearch = findViewById(R.id.edtSearch);
+        btnBack = findViewById(R.id.btnBack);
 
         list.add(new Notification("Thông báo điểm thi kết thúc học phần lần 2 môn KRL312 học kỳ Fall 2025", "7/11/2025",""));
         list.add(new Notification("Kế hoạch Lịch đào tạo đại học hệ chính quy năm 2026", "6/11/2025",""));
@@ -66,5 +69,9 @@ public class NotificationActivity extends AppCompatActivity {
             @Override
             public void afterTextChanged(Editable s) { }
         });
+
+        // Xử lý nút Back
+        btnBack.setOnClickListener(v -> onBackPressed());
+
     }
 }

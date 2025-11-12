@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:background="#FFF"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fitsSystemWindows="true">
+    android:background="#F5F5F5">
 
+    <!-- Header -->
     <!-- Thanh tiêu đề -->
     <LinearLayout
         android:id="@+id/headerBar"
@@ -22,7 +22,7 @@
             android:layout_height="24dp" />
         <TextView
             android:layout_marginStart="16dp"
-            android:text="Notification"
+            android:text="Mark"
             android:textColor="@android:color/white"
             android:textSize="20sp"
             android:textStyle="bold"
@@ -30,49 +30,31 @@
             android:layout_height="wrap_content"/>
     </LinearLayout>
 
-    <!-- Ô tìm kiếm -->
-    <LinearLayout
-        android:id="@+id/searchBar"
+    <!-- Tab chọn học kỳ -->
+    <HorizontalScrollView
+        android:id="@+id/semesterTabs"
         android:layout_below="@id/headerBar"
-        android:padding="12dp"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-        <EditText
-            android:id="@+id/edtSearch"
-            android:hint="Search..."
-            android:layout_weight="1"
-            android:padding="10dp"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content" />
-        <ImageView
-            android:id="@+id/btnSearch"
-            android:src="@drawable/ic_search"
-            android:layout_marginStart="8dp"
-            android:layout_width="40dp"
-            android:layout_height="40dp"/>
-    </LinearLayout>
-
-    <!-- Số kết quả -->
-    <TextView
-        android:id="@+id/tvResultCount"
-        android:layout_below="@id/searchBar"
-        android:text="Showing 10 results"
-        android:gravity="center"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textStyle="bold"
-        android:textSize="14sp"/>
+        android:paddingVertical="10dp"
+        android:scrollbars="none">
 
-    <!-- Danh sách thông báo -->
+        <LinearLayout
+            android:id="@+id/layoutTabs"
+            android:orientation="horizontal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingHorizontal="12dp" />
+    </HorizontalScrollView>
+
+    <!-- Danh sách môn học -->
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recyclerNotification"
-        android:layout_below="@id/tvResultCount"
+        android:id="@+id/recyclerGrades"
+        android:layout_below="@id/semesterTabs"
         android:layout_above="@id/bottomNavigationView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:padding="8dp"/>
+        android:padding="12dp" />
 
     <!-- Thanh điều hướng dưới cùng -->
     <com.google.android.material.bottomnavigation.BottomNavigationView

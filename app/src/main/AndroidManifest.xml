@@ -70,9 +70,6 @@
             android:name=".SignUpActivity"
             android:exported="false" />
         <activity
-            android:name=".NotificationActivity"
-            android:exported="false" />
-        <activity
             android:name=".activity.SelectSubjectClassAttendanceActivity"
             android:exported="true" />
         <activity
@@ -87,6 +84,27 @@
         <activity
             android:name=".activity.TeacherInputGradesActivity"
             android:exported="true" />
+        <activity
+            android:name=".NotificationActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name=".SemesterMarkActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+
         <activity
             android:name=".LoginPage"
             android:exported="true">
